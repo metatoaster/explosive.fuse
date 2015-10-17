@@ -1,0 +1,8 @@
+/build
+/dist
+*.egg-info
+*.py[co]
+.*.swp
+.env*
+*config.json
+.coverage

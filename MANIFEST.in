@@ -1,0 +1,7 @@
+recursive-include mtj *
+recursive-include docs *.txt
+recursive-include docs *.rst
+include *.txt
+include *.rst
+global-exclude *pyc
+global-exclude .*swp
