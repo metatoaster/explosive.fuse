@@ -2,24 +2,9 @@ import unittest
 from os.path import dirname
 from os.path import join
 
-from mtj.unzipfuse.mapper import default_pathmaker
 from mtj.unzipfuse.mapper import DefaultMapper
 
 path = lambda p: join(dirname(__file__), 'data', p)
-
-
-class DefaultPathmakerTestCase(unittest.TestCase):
-
-    def test_split(self):
-        self.assertEqual(
-            default_pathmaker('/tmp/some/test.zip', 'path/to/file'),
-            (['path', 'to'], 'file'),
-        )
-
-        self.assertEqual(
-            default_pathmaker('/tmp/some/test.zip', 'rootfile'),
-            ([], 'rootfile'),
-        )
 
 
 class DefaultMapperTestCase(unittest.TestCase):

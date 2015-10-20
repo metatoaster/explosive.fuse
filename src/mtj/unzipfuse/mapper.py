@@ -5,20 +5,9 @@ from glob import glob
 from zipfile import ZipFile
 from zipfile import BadZipFile
 
+from . import pathmaker
+
 logger = getLogger(__name__)
-
-
-def default_pathmaker(zipfile_path, inner_path):
-    """
-    By default ignore the zipfile_path and only treat the inner_path by
-    taking the final item and returning the rest as fragments as
-    specified.
-    """
-
-    frags = inner_path.split('/')
-    filename = frags.pop()
-
-    return frags, filename
 
 
 class DefaultMapper(object):
@@ -26,7 +15,7 @@ class DefaultMapper(object):
     Mapper that tracks the nested structure within a zip file.
     """
 
-    def __init__(self, path=None, pathmaker=default_pathmaker):
+    def __init__(self, path=None, pathmaker_name='default'):
         """
         Initialize the mapping, optionally with a path to a zip file.
 
@@ -35,7 +24,7 @@ class DefaultMapper(object):
         directory.
         """
 
-        self.pathmaker = pathmaker
+        self.pathmaker = getattr(pathmaker, pathmaker_name)
         self.mapping = {}
         if path:
             self.load_zip(path)
