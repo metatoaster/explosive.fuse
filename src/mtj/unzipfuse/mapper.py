@@ -8,12 +8,25 @@ from zipfile import BadZipFile
 logger = getLogger(__name__)
 
 
+def default_pathmaker(zipfile_path, inner_path):
+    """
+    By default ignore the zipfile_path and only treat the inner_path by
+    taking the final item and returning the rest as fragments as
+    specified.
+    """
+
+    frags = inner_path.split('/')
+    filename = frags.pop()
+
+    return frags, filename
+
+
 class DefaultMapper(object):
     """
     Mapper that tracks the nested structure within a zip file.
     """
 
-    def __init__(self, path=None):
+    def __init__(self, path=None, pathmaker=default_pathmaker):
         """
         Initialize the mapping, optionally with a path to a zip file.
 
@@ -22,6 +35,7 @@ class DefaultMapper(object):
         directory.
         """
 
+        self.pathmaker = pathmaker
         self.mapping = {}
         if path:
             self.load_zip(path)
@@ -60,7 +74,7 @@ class DefaultMapper(object):
         Traverse to path, or return the entry identified by path.
         """
 
-        path = '/'.split(path)
+        path_fragments = path.split('/')
         current = self.mapping
 
         for frag in path_fragments:
@@ -73,8 +87,7 @@ class DefaultMapper(object):
 
     def _load_infolist(self, zipfile_path, infolist):
         for info in infolist:
-            frags = info.filename.split('/')
-            filename = frags.pop()
+            frags, filename = self.pathmaker(zipfile_path, info.filename)
             target = self.mkdir(frags)
             if not filename:
                 # was a directory entry
@@ -101,3 +114,17 @@ class DefaultMapper(object):
         except BadZipFile:
             logger.warning(
                 '`%s` appears to be an invalid zipfile', zipfile_path)
+
+    def readfile(self, path):
+        """
+        Return the complete file with information contained in path.
+        """
+
+        # TODO: alternative implementation return zipinfo.open handler
+
+        info = self.traverse(path)
+
+        zipfn, filename, _ = info
+        with ZipFile(zipfn) as zf:
+            with zf.open(filename) as f:
+                return f.read()

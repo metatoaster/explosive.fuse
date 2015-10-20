@@ -34,6 +34,10 @@ class DefaultMapperTestCase(unittest.TestCase):
             'file6': (target, 'file6', 33),
         })
 
+        self.assertEqual(m.traverse('file1'), (target, 'file1', 33))
+        self.assertEqual(
+            m.readfile('file1'), b'b026324c6904b2a9cb4b88d6d61c81d1\n')
+
     def test_mapping_simple_nested(self):
         target = path('demo2.zip')
         m = DefaultMapper(target)
@@ -47,6 +51,10 @@ class DefaultMapperTestCase(unittest.TestCase):
                 'file6': (target, 'demo/file6', 33),
             }
         })
+
+        self.assertEqual(m.traverse('demo/file1'), (target, 'demo/file1', 33))
+        self.assertEqual(
+            m.readfile('demo/file1'), b'b026324c6904b2a9cb4b88d6d61c81d1\n')
 
     def test_mapping_complex_nested(self):
         target = path('demo3.zip')
@@ -119,3 +127,19 @@ class DefaultMapperTestCase(unittest.TestCase):
             },
             'some_path': (demo3, 'demo/some_path', 32),
         })
+
+        self.assertEqual(
+            m.traverse('demo/dir1/file1'), (demo3, 'demo/dir1/file1', 33))
+        self.assertEqual(
+            m.readfile('demo/dir1/file1'),
+            b'b026324c6904b2a9cb4b88d6d61c81d1\n')
+
+        self.assertEqual(
+            m.traverse('demo/dir1/file5'), (demo4, 'demo/dir1/file5', 26))
+        self.assertEqual(
+            m.traverse('demo/dir4/dir5/dir6/file6'),
+            (demo3, 'demo/dir4/dir5/dir6/file6', 33))
+
+        self.assertEqual(
+            m.readfile('demo/dir1/file5'),
+            b'demo4.zip demo/dir1/file5\n')
