@@ -8,7 +8,7 @@ from zipfile import BadZipFile
 logger = getLogger(__name__)
 
 
-class NestedMapper(object):
+class DefaultMapper(object):
     """
     Mapper that tracks the nested structure within a zip file.
     """

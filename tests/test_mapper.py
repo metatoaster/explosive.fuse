@@ -2,12 +2,12 @@ import unittest
 from os.path import dirname
 from os.path import join
 
-from mtj.unzipfuse.mapper import NestedMapper
+from mtj.unzipfuse.mapper import DefaultMapper
 
 
 path = lambda p: join(dirname(__file__), 'data', p)
 
-class NestedMapperTestCase(unittest.TestCase):
+class DefaultMapperTestCase(unittest.TestCase):
 
     maxDiff = 12300
 
@@ -18,13 +18,13 @@ class NestedMapperTestCase(unittest.TestCase):
         pass
 
     def test_mkdir(self):
-        m = NestedMapper()
+        m = DefaultMapper()
         result = m.mkdir(['1', '2', '3'])
         self.assertEqual(result, m.mapping['1']['2']['3'])
 
     def test_mapping_simple(self):
         target = path('demo1.zip')
-        m = NestedMapper(target)
+        m = DefaultMapper(target)
         self.assertEqual(m.mapping, {
             'file1': (target, 'file1', 33),
             'file2': (target, 'file2', 33),
@@ -36,7 +36,7 @@ class NestedMapperTestCase(unittest.TestCase):
 
     def test_mapping_simple_nested(self):
         target = path('demo2.zip')
-        m = NestedMapper(target)
+        m = DefaultMapper(target)
         self.assertEqual(m.mapping, {
             'demo': {
                 'file1': (target, 'demo/file1', 33),
@@ -50,7 +50,7 @@ class NestedMapperTestCase(unittest.TestCase):
 
     def test_mapping_complex_nested(self):
         target = path('demo3.zip')
-        m = NestedMapper(target)
+        m = DefaultMapper(target)
         self.assertEqual(m.mapping['demo'], {
             'dir1': {
                 'file1': (target, 'demo/dir1/file1', 33),
@@ -83,7 +83,7 @@ class NestedMapperTestCase(unittest.TestCase):
     def test_mapping_complex_multiple(self):
         demo3 = path('demo3.zip')
         demo4 = path('demo4.zip')
-        m = NestedMapper()
+        m = DefaultMapper()
         # load order matters, new entries will not overwrite old ones.
         m.load_zip(demo3)
         m.load_zip(demo4)
