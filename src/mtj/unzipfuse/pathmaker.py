@@ -22,6 +22,10 @@ def flatten(zipfile_path, inner_path):
     FLATTEN_CHAR defined in this module.
     """
 
+    if inner_path.endswith('/'):
+        # Directories shouldn't result in a file entry.
+        return [], ''
+
     return [], inner_path.replace('/', FLATTEN_CHAR)
 
 
@@ -30,7 +34,7 @@ def junk(zipfile_path, inner_path):
     Junk the entire path by only returning the inner filename.
     """
 
-    return [], basename(inner_path)
+    return [], basename(inner_path)  # basename will truncate dirs.
 
 
 def ziproot(zipfile_path, inner_path):
@@ -51,6 +55,10 @@ def ziproot_flatten(zipfile_path, inner_path):
     Combining ziproot and flatten.  Essentially the name of the zipfile
     is prepended to the resulting filename.
     """
+
+    if inner_path.endswith('/'):
+        # Directories shouldn't result in a file entry.
+        return [], ''
 
     fn = basename(zipfile_path) + '_' + inner_path.replace('/', FLATTEN_CHAR)
     return [], fn

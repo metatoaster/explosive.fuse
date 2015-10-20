@@ -16,6 +16,16 @@ class PathmakerTestCase(unittest.TestCase):
             ([], 'rootfile'),
         )
 
+        self.assertEqual(
+            pathmaker.default('/tmp/some/test.zip', 'somedir/'),
+            (['somedir'], ''),
+        )
+
+        self.assertEqual(
+            pathmaker.default('/tmp/some/test.zip', 'some/nested/dir/'),
+            (['some', 'nested', 'dir'], ''),
+        )
+
     def test_flatten(self):
         self.assertEqual(
             pathmaker.flatten('/tmp/some/test.zip', 'path/to/file'),
@@ -25,6 +35,16 @@ class PathmakerTestCase(unittest.TestCase):
         self.assertEqual(
             pathmaker.flatten('/tmp/some/test.zip', 'rootfile'),
             ([], 'rootfile'),
+        )
+
+        self.assertEqual(
+            pathmaker.flatten('/tmp/some/test.zip', 'somedir/'),
+            ([], ''),
+        )
+
+        self.assertEqual(
+            pathmaker.flatten('/tmp/some/test.zip', 'some/nested/dir/'),
+            ([], ''),
         )
 
     def test_junk(self):
@@ -38,6 +58,16 @@ class PathmakerTestCase(unittest.TestCase):
             ([], 'rootfile'),
         )
 
+        self.assertEqual(
+            pathmaker.junk('/tmp/some/test.zip', 'somedir/'),
+            ([], ''),
+        )
+
+        self.assertEqual(
+            pathmaker.junk('/tmp/some/test.zip', 'some/nested/dir/'),
+            ([], ''),
+        )
+
     def test_ziproot(self):
         self.assertEqual(
             pathmaker.ziproot('/tmp/some/test.zip', 'path/to/file'),
@@ -49,6 +79,16 @@ class PathmakerTestCase(unittest.TestCase):
             (['test.zip'], 'rootfile'),
         )
 
+        self.assertEqual(
+            pathmaker.ziproot('/tmp/some/test.zip', 'somedir/'),
+            (['test.zip', 'somedir'], ''),
+        )
+
+        self.assertEqual(
+            pathmaker.ziproot('/tmp/some/test.zip', 'some/nested/dir/'),
+            (['test.zip', 'some', 'nested', 'dir'], ''),
+        )
+
     def test_ziproot_flatten(self):
         self.assertEqual(
             pathmaker.ziproot_flatten('/tmp/some/test.zip', 'path/to/file'),
@@ -58,4 +98,15 @@ class PathmakerTestCase(unittest.TestCase):
         self.assertEqual(
             pathmaker.ziproot_flatten('/tmp/some/test.zip', 'rootfile'),
             ([], 'test.zip_rootfile'),
+        )
+
+        self.assertEqual(
+            pathmaker.ziproot_flatten('/tmp/some/test.zip', 'somedir/'),
+            ([], ''),
+        )
+
+        self.assertEqual(
+            pathmaker.ziproot_flatten(
+                '/tmp/some/test.zip', 'some/nested/dir/'),
+            ([], ''),
         )
