@@ -63,7 +63,7 @@ class DefaultMapper(object):
         Traverse to path, or return the entry identified by path.
         """
 
-        path_fragments = path.split('/')
+        path_fragments = path and path.split('/') or []
         current = self.mapping
 
         for frag in path_fragments:

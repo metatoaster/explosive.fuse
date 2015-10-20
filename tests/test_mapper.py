@@ -17,6 +17,11 @@ class DefaultMapperTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def test_null_traverse(self):
+        m = DefaultMapper()
+        self.assertIs(m.traverse(''), m.mapping)
+        self.assertIsNone(m.traverse('nowhere'))
+
     def test_mkdir(self):
         m = DefaultMapper()
         result = m.mkdir(['1', '2', '3'])
