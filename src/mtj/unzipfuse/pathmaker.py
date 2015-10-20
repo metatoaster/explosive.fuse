@@ -1,5 +1,7 @@
 from os.path import basename
 
+FLATTEN_CHAR = '_'
+
 
 def default(zipfile_path, inner_path):
     """
@@ -14,10 +16,27 @@ def default(zipfile_path, inner_path):
     return frags, filename
 
 
+def flatten(zipfile_path, inner_path):
+    """
+    Flattens the inner_path by replacing all path separators with the
+    FLATTEN_CHAR defined in this module.
+    """
+
+    return [], inner_path.replace('/', FLATTEN_CHAR)
+
+
+def junk(zipfile_path, inner_path):
+    """
+    Junk the entire path by only returning the inner filename.
+    """
+
+    return [], basename(inner_path)
+
+
 def ziproot(zipfile_path, inner_path):
     """
-    Same as default_pathmaker, but this adds the name of the zipfile to
-    the beginning of the dir fragments returned.
+    Same as default, but this adds the name of the zipfile to the
+    beginning of the dir fragments returned.
     """
 
     frags = [basename(zipfile_path)]
@@ -26,3 +45,12 @@ def ziproot(zipfile_path, inner_path):
 
     return frags, filename
 
+
+def ziproot_flatten(zipfile_path, inner_path):
+    """
+    Combining ziproot and flatten.  Essentially the name of the zipfile
+    is prepended to the resulting filename.
+    """
+
+    fn = basename(zipfile_path) + '_' + inner_path.replace('/', FLATTEN_CHAR)
+    return [], fn
