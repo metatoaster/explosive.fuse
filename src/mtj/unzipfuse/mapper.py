@@ -117,3 +117,13 @@ class DefaultMapper(object):
         with ZipFile(zipfn) as zf:
             with zf.open(filename) as f:
                 return f.read()
+
+    def readdir(self, path):
+        """
+        Return a listing of all files in a directory
+        """
+
+        info = self.traverse(path)
+        if not isinstance(info, dict):
+            return []
+        return list(info.keys())

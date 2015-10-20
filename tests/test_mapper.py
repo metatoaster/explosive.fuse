@@ -27,6 +27,15 @@ class DefaultMapperTestCase(unittest.TestCase):
         result = m.mkdir(['1', '2', '3'])
         self.assertEqual(result, m.mapping['1']['2']['3'])
 
+    def test_readdir(self):
+        m = DefaultMapper()
+        self.assertEqual(m.readdir(''), [])
+        m.mkdir(['1'])
+        self.assertEqual(m.readdir(''), ['1'])
+        m.mkdir(['2'])
+        m.mkdir(['3'])
+        self.assertEqual(sorted(m.readdir('')), ['1', '2', '3'])
+
     def test_mapping_simple(self):
         target = path('demo1.zip')
         m = DefaultMapper(target)
@@ -148,3 +157,5 @@ class DefaultMapperTestCase(unittest.TestCase):
         self.assertEqual(
             m.readfile('demo/dir1/file5'),
             b'demo4.zip demo/dir1/file5\n')
+
+        self.assertEqual(sorted(m.readdir('')), ['demo', 'hello'])
