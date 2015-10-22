@@ -8,7 +8,7 @@ from time import time
 
 from fuse import FUSE, FuseOSError, Operations, LoggingMixIn
 
-from explosive.fuse.unzip import Mapping
+from explosive.fuse.mapper import DefaultMapper
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ file_records = dict(
     st_atime=now,
 )
 
-root_dir_record = dict(
+dir_record = dict(
     st_mode=(S_IFDIR | 0o755),
     st_ctime=now,
     st_mtime=now,
@@ -32,28 +32,29 @@ root_dir_record = dict(
 )
 
 
-class Unzip(LoggingMixIn, Operations):
+class ExplosiveFUSE(LoggingMixIn, Operations):
     """
-    Simple implementation that will present all zip files within the
-    input directory as a list of flat files.
+    The interface between the mapping and the FUSE bindings (provided
+    by the Operations class).
     """
 
-    def __init__(self, path):
+    def __init__(self, *path):
         self.fd = 0
-        logger.info('loading zip files...')
-        self.mapping = Mapping(path + '/*.zip')
-        logger.info('done loading zip files, got %d entries.',
-                    len(self.mapping.mapping))
+        self.mapping = DefaultMapper()
+        loaded = sum(self.mapping.load_zip(p) for p in path)
+        logger.info('loaded %d zip file(s).', loaded)
 
     def getattr(self, path, fh=None):
         key = path[1:]
 
-        if key == '':
-            return root_dir_record
-        elif key not in self.mapping.mapping:
+        info = self.mapping.traverse(key)
+        if info is None:
             raise FuseOSError(ENOENT)
 
-        result = {'st_size': self.mapping.mapping[key][2]}
+        if isinstance(info, dict):
+            return dir_record
+
+        result = {'st_size': info[2]}
         result.update(file_records)
         return result
 
@@ -75,7 +76,8 @@ class Unzip(LoggingMixIn, Operations):
         return data[offset:offset + size]
 
     def readdir(self, path, fh):
-        return ['.', '..'] + [x for x in self.mapping.mapping]
+        key = path[1:]
+        return ['.', '..'] + self.mapping.readdir(key)
 
     def statfs(self, path):
         # TODO report total size of the zips?
@@ -83,9 +85,9 @@ class Unzip(LoggingMixIn, Operations):
 
 
 if __name__ == '__main__':
-    if len(argv) != 3:
-        print('usage: %s <dir_of_zipfiles> <mountpoint>' % argv[0])
+    if len(argv) < 3:
+        print('usage: %s mountpoint zipfile [zipfile ...]' % argv[0])
         exit(1)
 
     logging.getLogger().setLevel(logging.DEBUG)
-    fuse = FUSE(Unzip(argv[1]), argv[2], foreground=True)
+    fuse = FUSE(ExplosiveFUSE(*argv[2:]), argv[1], foreground=True)

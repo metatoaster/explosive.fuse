@@ -98,9 +98,14 @@ class DefaultMapper(object):
         try:
             with ZipFile(zipfile_path) as zf:
                 self._load_infolist(zipfile_path, zf.infolist())
+            logger.info('loaded `%s`', zipfile_path)
+            return True
         except BadZipFile:
             logger.warning(
                 '`%s` appears to be an invalid zipfile', zipfile_path)
+        except:
+            logger.exception()
+        return False
 
     def readfile(self, path):
         """
