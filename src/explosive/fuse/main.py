@@ -10,11 +10,7 @@ from fuse import FUSE, FuseOSError, Operations, LoggingMixIn
 
 from explosive.fuse.unzip import Mapping
 
-if not hasattr(__builtins__, 'bytes'):
-    bytes = str
-
 logger = logging.getLogger(__name__)
-
 
 now = time()
 # Turn this into a type that always return those key/values to avoid
