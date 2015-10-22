@@ -8,7 +8,7 @@ from time import time
 
 from fuse import FUSE, FuseOSError, Operations, LoggingMixIn
 
-from mtj.unzipfuse.unzip import Mapping
+from explosive.fuse.unzip import Mapping
 
 if not hasattr(__builtins__, 'bytes'):
     bytes = str

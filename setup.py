@@ -3,9 +3,9 @@ import os
 
 version = '0.1'
 
-setup(name='mtj.unzipfuse',
+setup(name='explosive.fuse',
       version=version,
-      description="Unzip and mount via FFUSE",
+      description="Mount archives as a filesystem.",
       long_description=open("README.txt").read() + "\n" +
                        open(os.path.join("docs", "HISTORY.txt")).read(),
       # Get more strings from
@@ -16,11 +16,11 @@ setup(name='mtj.unzipfuse',
       keywords='',
       author='Tommy Yu',
       author_email='y@metatoaster.com',
-      url='https://github.com/metatoaster/mtj.unzipfuse',
+      url='https://github.com/metatoaster/explosive.fuse',
       license='GPL',
       packages=find_packages('src'),
       package_dir={'': 'src'},
-      namespace_packages=['mtj'],
+      namespace_packages=['explosive'],
       include_package_data=True,
       zip_safe=False,
       install_requires=[

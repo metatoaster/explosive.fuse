@@ -2,7 +2,7 @@ import unittest
 from os.path import dirname
 from os.path import join
 
-from mtj.unzipfuse.mapper import DefaultMapper
+from explosive.fuse.mapper import DefaultMapper
 
 path = lambda p: join(dirname(__file__), 'data', p)
 

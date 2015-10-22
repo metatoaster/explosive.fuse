@@ -1,6 +1,6 @@
 import unittest
 
-from mtj.unzipfuse import pathmaker
+from explosive.fuse import pathmaker
 
 
 class PathmakerTestCase(unittest.TestCase):
