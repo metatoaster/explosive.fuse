@@ -38,23 +38,20 @@ class DefaultMapper(object):
         # set current to root node
         current = self.mapping
 
-        for frag in path_fragments:
-            if not isinstance(current, dict):
-                # make better error message.
-                logger.warning(
-                    'Fail to create directory entry at `%s` blocked by file '
-                    'entry `%s`.',
-                    '/'.join(path_fragments),
-                    frag,
-                )
-                # XXX fix this as this is the WRONG result type.
-                return current
+        for c, frag in enumerate(path_fragments):
             if frag in current:
-                # directory dict entry exists, set current to that.
                 current = current[frag]
-                continue
-            # create directory dict entry and set current.
-            current[frag] = current = {}
+                if not isinstance(current, dict):
+                    raise ValueError(
+                        'cannot create directory `%(filename)s` at '
+                        '`%(path)s/`: file entry exists.' % {
+                            'filename': frag,
+                            'path': '/'.join(path_fragments[:c]),
+                        }
+                    )
+            else:
+                # create directory dict entry and set current.
+                current[frag] = current = {}
 
         return current
 
@@ -77,16 +74,17 @@ class DefaultMapper(object):
     def _load_infolist(self, zipfile_path, infolist):
         for info in infolist:
             frags, filename = self.pathmaker(zipfile_path, info.filename)
-            target = self.mkdir(frags)
+            try:
+                target = self.mkdir(frags)
+            except ValueError as e:
+                logger.warning(
+                    '`%s` could not be created: %s', info.filename, e.args[0])
+                continue
+
             if not filename:
                 # was a directory entry
                 continue
-            if not isinstance(target, dict):
-                logger.info(
-                    'Could not create `%s` as preceding dir is a file',
-                    info.filename,
-                )
-                continue
+
             if filename in target:
                 logger.info('`%s` already exists; ignoring', info.filename)
                 continue

@@ -26,6 +26,24 @@ class DefaultMapperTestCase(unittest.TestCase):
         m = DefaultMapper()
         result = m.mkdir(['1', '2', '3'])
         self.assertEqual(result, m.mapping['1']['2']['3'])
+        result = m.mkdir(['1', '2', '3'])
+        self.assertEqual(result, m.mapping['1']['2']['3'])
+
+    def test_mkdir_blocked(self):
+        m = DefaultMapper()
+        m.mapping['notdir'] = ('somezip.zip', 'afile', 1)
+
+        with self.assertRaises(ValueError) as cm:
+            m.mkdir(['notdir', '2', '3'])
+
+        self.assertEqual(cm.exception.args[0],
+            'cannot create directory `notdir` at `/`: file entry exists.'
+        )
+        self.assertEqual(m.mapping, {'notdir': ('somezip.zip', 'afile', 1)})
+
+        # simple case should fail, too
+        with self.assertRaises(ValueError) as cm:
+            m.mkdir(['notdir',])
 
     def test_readdir(self):
         m = DefaultMapper()
@@ -33,8 +51,18 @@ class DefaultMapperTestCase(unittest.TestCase):
         m.mkdir(['1'])
         self.assertEqual(m.readdir(''), ['1'])
         m.mkdir(['2'])
-        m.mkdir(['3'])
+        m.mkdir(['3', '4', '5'])
         self.assertEqual(sorted(m.readdir('')), ['1', '2', '3'])
+        self.assertEqual(sorted(m.readdir('3')), ['4'])
+        self.assertEqual(sorted(m.readdir('3/4')), ['5'])
+
+    def test_readdir_alt(self):
+        m = DefaultMapper()
+        m.mkdir(['1'])
+        m.mapping['notdir'] = ('somezip.zip', 'afile', 1)
+        self.assertEqual(sorted(m.readdir('')), ['1', 'notdir'])
+        self.assertEqual(sorted(m.readdir('notdir')), [])
+        self.assertEqual(sorted(m.readdir('nowhere')), [])
 
     def test_mapping_simple(self):
         target = path('demo1.zip')
@@ -69,6 +97,14 @@ class DefaultMapperTestCase(unittest.TestCase):
         self.assertEqual(m.traverse('demo/file1'), (target, 'demo/file1', 33))
         self.assertEqual(
             m.readfile('demo/file1'), b'b026324c6904b2a9cb4b88d6d61c81d1\n')
+
+    def test_mapping_simple_nested_blocked(self):
+        target = path('demo2.zip')
+        m = DefaultMapper()
+        # create a file entry named 'demo' to block creation of dir
+        m.mapping['demo'] = ('somezip.zip', 'notadir', 0)
+        m.load_zip(target)
+        self.assertEqual(m.mapping, {'demo': ('somezip.zip', 'notadir', 0)})
 
     def test_mapping_complex_nested(self):
         target = path('demo3.zip')
