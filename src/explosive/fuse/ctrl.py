@@ -1,7 +1,12 @@
 import sys
+import logging
+
 from argparse import ArgumentParser
+from fuse import FUSE
 
 from explosive.fuse import pathmaker
+from explosive.fuse.fs import ExplosiveFUSE
+
 
 layout_choices = sorted(
     i for i in pathmaker.__all__
@@ -27,3 +32,25 @@ parser.add_argument(
 parser.add_argument(
     'archives', metavar='archives', nargs='+',
     help='The archive(s) to generate directory structures with')
+
+def main(args=None):
+    if args is None:
+        args = sys.argv[1:]
+
+    parsed_args = parser.parse_args(args)
+
+    if parsed_args.debug:
+        logging.basicConfig(
+            level='INFO',
+            format='%(asctime)s %(levelname)s %(name)s %(message)s'
+        )
+
+    fuse = FUSE(
+        ExplosiveFUSE(
+            parsed_args.archives, pathmaker_name=parsed_args.pathmaker_name),
+        parsed_args.dir,
+        foreground=parsed_args.foreground,
+    )
+
+if __name__ == '__main__':
+    main()

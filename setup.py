@@ -26,8 +26,11 @@ setup(name='explosive.fuse',
       install_requires=[
           'setuptools',
           # -*- Extra requirements: -*-
+          'fusepy',
       ],
       entry_points="""
       # -*- Entry points: -*-
+      [console_scripts]
+      explode = explosive.fuse.ctrl:main
       """,
       )
