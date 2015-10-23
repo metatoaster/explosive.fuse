@@ -6,7 +6,7 @@ from stat import S_IFDIR, S_IFLNK, S_IFREG
 from sys import argv, exit
 from time import time
 
-from fuse import FUSE, FuseOSError, Operations, LoggingMixIn
+from fuse import FuseOSError, Operations, LoggingMixIn
 
 from explosive.fuse.mapper import DefaultMapper
 
@@ -38,10 +38,14 @@ class ExplosiveFUSE(LoggingMixIn, Operations):
     by the Operations class).
     """
 
-    def __init__(self, *path):
+    def __init__(self, archive_paths, pathmaker_name=None):
+        # single archive use default, multiple archives use ziproot.
+        if pathmaker_name is None:
+            pathmaker_name = len(archive_paths) > 1 and 'ziproot' or 'default'
+
         self.fd = 0
-        self.mapping = DefaultMapper()
-        loaded = sum(self.mapping.load_zip(p) for p in path)
+        self.mapping = DefaultMapper(pathmaker_name=pathmaker_name)
+        loaded = sum(self.mapping.load_zip(p) for p in archive_paths)
         logger.info('loaded %d zip file(s).', loaded)
 
     def getattr(self, path, fh=None):
@@ -90,4 +94,4 @@ if __name__ == '__main__':
         exit(1)
 
     logging.getLogger().setLevel(logging.DEBUG)
-    fuse = FUSE(ExplosiveFUSE(*argv[2:]), argv[1], foreground=True)
+    fuse = FUSE(ExplosiveFUSE(argv[2:]), argv[1], foreground=True)

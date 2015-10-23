@@ -2,6 +2,14 @@ from os.path import basename
 
 FLATTEN_CHAR = '_'
 
+__all__ = [
+    'default',
+    'flatten',
+    'junk',
+    'ziproot',
+    'ziproot_flatten',
+]
+
 
 def default(zipfile_path, inner_path):
     """
