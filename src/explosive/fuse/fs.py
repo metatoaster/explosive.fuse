@@ -24,7 +24,7 @@ file_records = dict(
 )
 
 dir_record = dict(
-    st_mode=(S_IFDIR | 0o755),
+    st_mode=(S_IFDIR | 0o555),
     st_ctime=now,
     st_mtime=now,
     st_atime=now,
