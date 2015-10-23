@@ -3,7 +3,7 @@ from os.path import basename
 FLATTEN_CHAR = '_'
 
 __all__ = [
-    'default',
+    'root',
     'flatten',
     'junk',
     'ziproot',
@@ -11,11 +11,9 @@ __all__ = [
 ]
 
 
-def default(zipfile_path, inner_path):
+def root(zipfile_path, inner_path):
     """
-    By default ignore the zipfile_path and only treat the inner_path by
-    taking the final item and returning the rest as fragments as
-    specified.
+    Present file entries to the root of the mount point.
     """
 
     frags = inner_path.split('/')
@@ -24,22 +22,27 @@ def default(zipfile_path, inner_path):
     return frags, filename
 
 
-def flatten(zipfile_path, inner_path):
-    """
-    Flattens the inner_path by replacing all path separators with the
-    FLATTEN_CHAR defined in this module.
-    """
+def flatten_maker(flatten_char=FLATTEN_CHAR):
 
-    if inner_path.endswith('/'):
-        # Directories shouldn't result in a file entry.
-        return [], ''
+    def flatten(zipfile_path, inner_path):
+        """
+        Flattens the directory structure to the root by replacing all
+        path separators for each file entries with the `%s` character.
+        """ % flatten_char
 
-    return [], inner_path.replace('/', FLATTEN_CHAR)
+        if inner_path.endswith('/'):
+            # Directories shouldn't result in a file entry.
+            return [], ''
+
+        return [], inner_path.replace('/', flatten_char)
+    return flatten
+
+flatten = flatten_maker()
 
 
 def junk(zipfile_path, inner_path):
     """
-    Junk the entire path by only returning the inner filename.
+    Junk all paths, only keep the basename of file entries.
     """
 
     return [], basename(inner_path)  # basename will truncate dirs.
@@ -47,8 +50,7 @@ def junk(zipfile_path, inner_path):
 
 def ziproot(zipfile_path, inner_path):
     """
-    Same as default, but this adds the name of the zipfile to the
-    beginning of the dir fragments returned.
+    Present file entries inside a directory named after its zip file.
     """
 
     frags = [basename(zipfile_path)]
@@ -58,15 +60,21 @@ def ziproot(zipfile_path, inner_path):
     return frags, filename
 
 
-def ziproot_flatten(zipfile_path, inner_path):
-    """
-    Combining ziproot and flatten.  Essentially the name of the zipfile
-    is prepended to the resulting filename.
-    """
+def ziproot_flatten_maker(flatten_char=FLATTEN_CHAR):
+    def ziproot_flatten(zipfile_path, inner_path):
+        """
+        Combining ziproot and flatten.  Essentially all file entries are
+        presented with the name of the zipfile prepended to the flattened
+        filename.
+        """
 
-    if inner_path.endswith('/'):
-        # Directories shouldn't result in a file entry.
-        return [], ''
+        if inner_path.endswith('/'):
+            # Directories shouldn't result in a file entry.
+            return [], ''
 
-    fn = basename(zipfile_path) + '_' + inner_path.replace('/', FLATTEN_CHAR)
-    return [], fn
+        fn = (basename(zipfile_path) + FLATTEN_CHAR +
+              inner_path.replace('/', FLATTEN_CHAR))
+        return [], fn
+    return ziproot_flatten
+
+ziproot_flatten = ziproot_flatten_maker()

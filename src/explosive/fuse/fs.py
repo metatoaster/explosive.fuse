@@ -39,9 +39,14 @@ class ExplosiveFUSE(LoggingMixIn, Operations):
     """
 
     def __init__(self, archive_paths, pathmaker_name=None):
-        # single archive use default, multiple archives use ziproot.
+        # single archive use root, multiple archives use ziproot.
         if pathmaker_name is None:
-            pathmaker_name = len(archive_paths) > 1 and 'ziproot' or 'default'
+            pathmaker_name = len(archive_paths) > 1 and 'ziproot' or 'root'
+            logger.info(
+                'No layout strategy specified, auto-selected `%s` based on '
+                'the number of input archives (%d).',
+                pathmaker_name, len(archive_paths),
+            )
 
         self.fd = 0
         self.mapping = DefaultMapper(pathmaker_name=pathmaker_name)
