@@ -103,8 +103,11 @@ class DefaultMapper(object):
         except BadZipFile:
             logger.warning(
                 '`%s` appears to be an invalid zipfile', zipfile_path)
+        except FileNotFoundError:
+            logger.warning(
+                '`%s` does not exist.', zipfile_path)
         except:
-            logger.exception()
+            logger.exception('Exception')
         return False
 
     def readfile(self, path):

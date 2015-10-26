@@ -1,0 +1,11 @@
+[run]
+omit =
+    */python?.?/*
+    */lib-python/?.?/*.py
+    */lib_pypy/*.py
+    */site-packages/*
+
+[report]
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover

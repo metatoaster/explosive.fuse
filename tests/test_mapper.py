@@ -64,6 +64,15 @@ class DefaultMapperTestCase(unittest.TestCase):
         self.assertEqual(sorted(m.readdir('notdir')), [])
         self.assertEqual(sorted(m.readdir('nowhere')), [])
 
+    def test_mapping_bad(self):
+        bad_target = path('bad.zip')
+        missing_target = path('nosuchzip.zip')
+        m = DefaultMapper()
+        m.load_zip(bad_target)
+        m.load_zip(missing_target)
+        m.load_zip(object())
+        self.assertEqual(m.mapping, {})
+
     def test_mapping_simple(self):
         target = path('demo1.zip')
         m = DefaultMapper(target)
