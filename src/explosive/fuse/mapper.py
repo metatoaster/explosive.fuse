@@ -3,7 +3,10 @@ from os.path import abspath
 from os.path import basename
 from glob import glob
 from zipfile import ZipFile
-from zipfile import BadZipFile
+try:
+    from zipfile import BadZipFile
+except ImportError:  # pragma: no cover
+    from zipfile import BadZipfile as BadZipFile
 
 from . import pathmaker
 
