@@ -79,7 +79,7 @@ def get_argparse():
 
 
 def main(args=None):
-    if args is None:
+    if args is None:  # pragma: no cover
         args = sys.argv[1:]
 
     parser = get_argparse()
@@ -92,12 +92,18 @@ def main(args=None):
             format='%(asctime)s %(levelname)s %(name)s %(message)s'
         )
 
-    fuse = FUSE(
-        ExplosiveFUSE(
-            parsed_args.archives, pathmaker_name=parsed_args.pathmaker_name),
-        parsed_args.dir,
-        foreground=parsed_args.foreground,
-    )
+    try:
+        fuse = FUSE(
+            ExplosiveFUSE(
+                parsed_args.archives,
+                pathmaker_name=parsed_args.pathmaker_name
+            ),
+            parsed_args.dir,
+            foreground=parsed_args.foreground,
+        )
+    except RuntimeError:
+        # assume error messages are properly handled.
+        sys.exit(255)
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     main()
