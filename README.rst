@@ -86,3 +86,12 @@ ziproot_flatten
     the root by replacing all path separators for each file entries with
     the `_` character, with all file names prepended with its source
     archive file name.
+
+
+License
+=======
+
+This work is licensed under `GNU Generic Public License, version 3`_.
+
+.. _GNU Generic Public License, version 3:
+    http://opensource.org/licenses/gpl-3.0.html
