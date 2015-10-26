@@ -17,10 +17,10 @@ elsewhere.
 Currently, only ``zip`` archives are supported, with plans to support at
 least ``rar``.
 
-.. image:: https://travis-ci.org/metatoaster/explosive.fuse.svg?branch=master
+.. image:: https://travis-ci.org/metatoaster/explosive.fuse.svg?branch=0.1.x
     :target: https://travis-ci.org/metatoaster/explosive.fuse
-.. image:: https://coveralls.io/repos/metatoaster/explosive.fuse/badge.svg?branch=master
-   :target: https://coveralls.io/r/metatoaster/explosive.fuse?branch=master
+.. image:: https://coveralls.io/repos/metatoaster/explosive.fuse/badge.svg?branch=0.1.x
+   :target: https://coveralls.io/r/metatoaster/explosive.fuse?branch=0.1.x
 
 
 Installation
