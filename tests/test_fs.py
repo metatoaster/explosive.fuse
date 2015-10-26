@@ -49,7 +49,6 @@ class FsTestCase(unittest.TestCase):
 
     def test_readdir(self):
         fs = ExplosiveFUSE([path('demo1.zip'), path('demo2.zip')])
-        # TODO figure out how to test correct usage of fh.
         self.assertEqual(
             sorted(fs.readdir('/', 0)), ['.', '..', 'demo1.zip', 'demo2.zip'])
         self.assertEqual(
