@@ -91,12 +91,3 @@ class ExplosiveFUSE(LoggingMixIn, Operations):
     def statfs(self, path):
         # TODO report total size of the zips?
         return dict(f_bsize=1024, f_blocks=1024, f_bavail=0)
-
-
-if __name__ == '__main__':
-    if len(argv) < 3:
-        print('usage: %s mountpoint zipfile [zipfile ...]' % argv[0])
-        exit(1)
-
-    logging.getLogger().setLevel(logging.DEBUG)
-    fuse = FUSE(ExplosiveFUSE(argv[2:]), argv[1], foreground=True)
