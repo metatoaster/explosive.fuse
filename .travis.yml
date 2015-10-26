@@ -1,14 +1,16 @@
 language: python
-sudo: true
+sudo: false
 python:
   - "2.7"
   - "3.3"
   - "3.4"
   - "3.5"
   - "pypy"
+addons:
+  apt:
+    packages:
+    - libfuse-dev
 install:
-  - sudo apt-get update
-  - sudo apt-get install libfuse-dev
   - pip install nose coverage
   - python setup.py develop
 script:
