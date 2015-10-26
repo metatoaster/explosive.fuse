@@ -1,5 +1,5 @@
 language: python
-sudo: false
+sudo: true
 python:
   - "2.6"
   - "2.7"
@@ -8,9 +8,11 @@ python:
   - "3.5"
   - "pypy"
 install:
+  - sudo apt-get update
+  - sudo apt-get install libfuse-dev
   - pip install nose coverage
   - python setup.py develop
-script: 
+script:
   - nosetests --with-coverage --cover-package=explosive.fuse
 after_success:
   - pip install coveralls
