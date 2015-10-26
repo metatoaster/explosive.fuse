@@ -6,7 +6,9 @@ from zipfile import ZipFile
 try:
     from zipfile import BadZipFile
 except ImportError:  # pragma: no cover
+    # Assume python 2
     from zipfile import BadZipfile as BadZipFile
+    FileNotFoundError = IOError  # This is raised by zipfile.
 
 from . import pathmaker
 
