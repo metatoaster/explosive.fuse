@@ -1,0 +1,21 @@
+language: python
+sudo: false
+python:
+  - "2.6"
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "pypy"
+install:
+  - pip install nose coverage
+  - python setup.py develop
+script: 
+  - nosetests --with-coverage --cover-package=explosive.fuse
+after_success:
+  - pip install coveralls
+  - coveralls
+branches:
+  only:
+    - master
+    - 0.1.x
