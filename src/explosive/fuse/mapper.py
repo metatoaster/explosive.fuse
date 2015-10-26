@@ -15,7 +15,7 @@ class DefaultMapper(object):
     Mapper that tracks the nested structure within a zip file.
     """
 
-    def __init__(self, path=None, pathmaker_name='default'):
+    def __init__(self, path=None, pathmaker_name='root'):
         """
         Initialize the mapping, optionally with a path to a zip file.
 
