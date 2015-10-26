@@ -24,8 +24,8 @@ class _LayoutHelp(Action):
         formatter = HelpFormatter('')
         formatter.add_text(
             'An optional layout strategy can be specified.  This is to '
-            'instruct how ExplodeFS should present file entries across all '
-            'archive files within its mount point.  Do note that '
+            'instruct how ExplosiveFUSE should present file entries across '
+            'all archive files within its mount point.  Do note that '
             'paths are currently assigned on a first come, first served '
             'basis, i.e. file names created with the specified layout will '
             'not be "overwritten" by further file entries that result in the '
@@ -45,8 +45,8 @@ def get_argparse():
     )
 
     parser = ArgumentParser(
-        description='ExplodeFS: Explode compressed files into a filesystem, '
-                    'carefully.'
+        description='ExplosiveFUSE: Explode compressed files into a '
+                    'filesystem, carefully.'
     )
     parser.register('action', 'layout_help', _LayoutHelp)
 

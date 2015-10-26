@@ -1,18 +1,50 @@
-ExplodeFS: Explode compressed files into a filesystem, carefully.
-
 Introduction
 ============
 
-A tool to mount archive files (such as zip) to a directory using FUSE,
-enabling access to individual file entries within the compressed
-archives as normal files directly without the usual intermediate step of
-decompression to some temporary location, i.e. all file decompression is
-done dynamically, on demand.  This library is constructed with
-modularity in mind to enable customization, such as how the file entries
-within the archives are to be presented in the mounted location, and
-that the helper classes and functions within can be reused elsewhere.
+This package, ``explosive.fuse``, provides a command-line tool,
+``explode``, for mounting of archive files (such as zip) to a directory
+using `FUSE`_, enabling access to individual file entries within the
+compressed archives as normal files directly without the typical
+intermediate step of decompression to some temporary location, i.e. all
+file decompression is done dynamically, on demand.  This library is
+constructed with modularity in mind to enable customization, such as how
+the file entries within the archives are to be presented at the mounted
+location, and that the helper classes and functions within can be reused
+elsewhere.
 
-Currently only zip files are supported.
+.. _FUSE: http://fuse.sourceforge.net/
+
+Currently, only ``zip`` archives are supported, with plans to support at
+least ``rar``.
+
+
+Installation
+============
+
+ExplosiveFUSE requires the FUSE kernel module for your operating system
+be available and Python 2.6+/3.3+/PyPy.  First off install the FUSE
+kernel module if it is not already installed.
+
+For Debian/Ubuntu systems::
+
+    $ sudo apt-get install libfuse-dev
+
+For RedHat/CentOS systems::
+
+    $ sudo yum install fuse-devel
+
+This may or may not work on MacOS X via `FUSE for OS X`_ as the author
+has not tested this.  If this works please inform the author via the
+`issue tracker` for this project.
+
+.. _FUSE for OS X: https://osxfuse.github.io/
+.. _issue tracker: https://github.com/metatoaster/explosive.fuse/issues
+
+Then simply install this package via ``pip``, either in a virtualenv or
+at the system level, example::
+
+    $ pip install explosive.fuse
+
 
 Usage
 =====
