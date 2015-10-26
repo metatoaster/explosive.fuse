@@ -22,7 +22,7 @@ Installation
 ============
 
 ExplosiveFUSE requires the FUSE kernel module for your operating system
-be available and Python 2.6+/3.3+/PyPy.  First off install the FUSE
+be available and Python 2.7/3.3+/PyPy.  First off install the FUSE
 kernel module if it is not already installed.
 
 For Debian/Ubuntu systems::
