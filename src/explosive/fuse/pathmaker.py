@@ -25,16 +25,18 @@ def root(zipfile_path, inner_path):
 def flatten_maker(flatten_char=FLATTEN_CHAR):
 
     def flatten(zipfile_path, inner_path):
-        """
-        Flattens the directory structure to the root by replacing all
-        path separators for each file entries with the `%s` character.
-        """ % flatten_char
 
         if inner_path.endswith('/'):
             # Directories shouldn't result in a file entry.
             return [], ''
 
         return [], inner_path.replace('/', flatten_char)
+
+    flatten.__doc__ = """
+    Flattens the directory structure to the root by replacing all
+    path separators for each file entries with the `%s` character.
+    """ % flatten_char
+
     return flatten
 
 flatten = flatten_maker()
@@ -42,7 +44,7 @@ flatten = flatten_maker()
 
 def junk(zipfile_path, inner_path):
     """
-    Junk all paths, only keep the basename of file entries.
+    Junk all paths, keep only the basename of file entries.
     """
 
     return [], basename(inner_path)  # basename will truncate dirs.
@@ -50,7 +52,8 @@ def junk(zipfile_path, inner_path):
 
 def ziproot(zipfile_path, inner_path):
     """
-    Present file entries inside a directory named after its zip file.
+    Present file entries inside a directory named after its source
+    archive file.
     """
 
     frags = [basename(zipfile_path)]
@@ -62,11 +65,6 @@ def ziproot(zipfile_path, inner_path):
 
 def ziproot_flatten_maker(flatten_char=FLATTEN_CHAR):
     def ziproot_flatten(zipfile_path, inner_path):
-        """
-        Combining ziproot and flatten.  Essentially all file entries are
-        presented with the name of the zipfile prepended to the flattened
-        filename.
-        """
 
         if inner_path.endswith('/'):
             # Directories shouldn't result in a file entry.
@@ -75,6 +73,14 @@ def ziproot_flatten_maker(flatten_char=FLATTEN_CHAR):
         fn = (basename(zipfile_path) + FLATTEN_CHAR +
               inner_path.replace('/', FLATTEN_CHAR))
         return [], fn
+
+    ziproot_flatten.__doc__ = """
+    Combining ziproot and flatten.  Flattens the directory structure to
+    the root by replacing all path separators for each file entries with
+    the `%s` character, with all file names prepended with its source
+    archive file name.
+    """ % flatten_char
+
     return ziproot_flatten
 
 ziproot_flatten = ziproot_flatten_maker()
