@@ -1,15 +1,56 @@
 language: python
 sudo: false
-python:
-  - "2.7"
-  - "3.3"
-  - "3.4"
-  - "3.5"
-  - "pypy"
-addons:
-  apt:
-    packages:
-    - libfuse-dev
+
+matrix:
+  # experimental travis support, so allow for failure.
+  allow_failures:
+    - os: osx
+  include:
+    - python: 2.7
+      addons:
+        apt:
+          packages:
+          - libfuse-dev
+    - python: 3.3
+      addons:
+        apt:
+          packages:
+          - libfuse-dev
+    - python: 3.4
+      addons:
+        apt:
+          packages:
+          - libfuse-dev
+    - python: 3.5
+      addons:
+        apt:
+          packages:
+          - libfuse-dev
+    - python: pypy
+      addons:
+        apt:
+          packages:
+          - libfuse-dev
+    - language: generic
+      os: osx
+      env: PY_VER=3.4.3
+    - language: generic
+      os: osx
+      env: PY_VER=3.5.0
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      brew update || brew update ;
+      brew install pyenv ;
+      brew outdated pyenv || brew upgrade pyenv ;
+      brew install osxfuse ;
+      pyenv install $PY_VER ;
+      pyenv global $PY_VER ;
+      pyenv rehash ;
+      python -m pip install --user virtualenv ;
+      python -m virtualenv ~/.venv ;
+      source ~/.venv/bin/activate ;
+    fi
 install:
   - pip install nose coverage
   - python setup.py develop
