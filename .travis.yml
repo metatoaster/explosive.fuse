@@ -57,8 +57,11 @@ install:
 script:
   - nosetests --with-coverage --cover-package=explosive.fuse
 after_success:
-  - pip install coveralls
-  - coveralls
+  # only submit coverage when testing under linux.
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      pip install coveralls ;
+      coveralls ;
+    fi
 branches:
   only:
     - master
