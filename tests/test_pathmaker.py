@@ -7,22 +7,22 @@ class PathmakerTestCase(unittest.TestCase):
 
     def test_default(self):
         self.assertEqual(
-            pathmaker.root('path/to/file'),
+            pathmaker.default('path/to/file'),
             (['path', 'to'], 'file'),
         )
 
         self.assertEqual(
-            pathmaker.root('rootfile'),
+            pathmaker.default('rootfile'),
             ([], 'rootfile'),
         )
 
         self.assertEqual(
-            pathmaker.root('somedir/'),
+            pathmaker.default('somedir/'),
             (['somedir'], ''),
         )
 
         self.assertEqual(
-            pathmaker.root('some/nested/dir/'),
+            pathmaker.default('some/nested/dir/'),
             (['some', 'nested', 'dir'], ''),
         )
 

@@ -3,15 +3,16 @@ from os.path import basename
 FLATTEN_CHAR = '_'
 
 __all__ = [
-    'root',
+    'default',
     'flatten',
     'junk',
 ]
 
 
-def root(inner_path):
+def default(inner_path):
     """
-    Present file entries to the root of the mount point.
+    Present file entries as they were within their respective directory
+    structures to the root of its source archive.
     """
 
     frags = inner_path.split('/')
@@ -31,8 +32,9 @@ def flatten_maker(flatten_char=FLATTEN_CHAR):
         return [], inner_path.replace('/', flatten_char)
 
     flatten.__doc__ = """
-    Flattens the directory structure to the root by replacing all
-    path separators for each file entries with the `%s` character.
+    Flattens the directory structure to the root of the mount point by
+    replacing all path separators for each file entries with the `%s`
+    character.
     """ % flatten_char
 
     return flatten

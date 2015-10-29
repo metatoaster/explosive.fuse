@@ -14,7 +14,7 @@ class FsTestCase(unittest.TestCase):
 
     def test_simple(self):
         fs = ExplosiveFUSE([path('demo1.zip')])
-        self.assertIs(fs.mapping.pathmaker, pathmaker.root)
+        self.assertIs(fs.mapping.pathmaker, pathmaker.default)
 
         fs = ExplosiveFUSE([path('demo1.zip')], pathmaker_name='junk')
         self.assertIs(fs.mapping.pathmaker, pathmaker.junk)

@@ -23,13 +23,11 @@ class _LayoutHelp(Action):
         ]
         formatter = HelpFormatter('')
         formatter.add_text(
-            'An optional layout strategy can be specified.  This is to '
+            'An explicit layout strategy can be specified.  This is to '
             'instruct how ExplosiveFUSE should present file entries across '
             'all archive files within its mount point.  Do note that '
-            'paths are currently assigned on a first come, first served '
-            'basis, i.e. file names created with the specified layout will '
-            'not be "overwritten" by further file entries that result in the '
-            'same file name.'
+            'the final outcome of the layout is also influenced by the usage '
+            'of the ``--overwrite`` and the ``--omit-arcname`` flags.'
         )
         formatter.start_section('Available layout strategies')
         formatter.add_arguments(actions)
@@ -52,11 +50,11 @@ def get_argparse():
 
     parser.add_argument(
         '-l', '--layout', dest='pathmaker_name', choices=layout_choices,
-        metavar='<strategy>', default='root',
+        metavar='<strategy>', default='default',
         help='Directory layout presentation strategy.  '
              'Available strategies are: ' +
              ', '.join(layout_choices) + '. '
-             'Default is `root`.'
+             'If unspecified, the default is `%(default)s`.'
     )
     parser.add_argument(
         '--layout-info', action='layout_help',
@@ -74,12 +72,13 @@ def get_argparse():
         'archives', metavar='archives', nargs='+',
         help='The archive(s) to generate directory structures with')
     parser.add_argument(
-        '-o', '--overwrite', dest='overwrite', action='store_true',
+        '--overwrite', dest='overwrite', action='store_true',
         help='Existing file entries will be overwritten by later file entries '
              'if they share the same generated path.')
     parser.add_argument(
-        '-n', '--name', dest='include_arcname', action='store_true',
-        help='Prepend the file name of origin archive in generated paths.')
+        '--omit-arcname', dest='include_arcname', action='store_false',
+        help='Omit the basename of the origin archive from the generated '
+             'paths.')
 
     return parser
 

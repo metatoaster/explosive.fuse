@@ -38,7 +38,7 @@ class ExplosiveFUSE(LoggingMixIn, Operations):
     by the Operations class).
     """
 
-    def __init__(self, archive_paths, pathmaker_name='root',
+    def __init__(self, archive_paths, pathmaker_name='default',
             overwrite=False, include_arcname=False):
         # if include_arcname is not defined, define it based whether
         # there is a single or multiple archives.
