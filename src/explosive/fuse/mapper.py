@@ -1,7 +1,4 @@
 from logging import getLogger
-from os.path import abspath
-from os.path import basename
-from glob import glob
 from zipfile import ZipFile
 try:
     from zipfile import BadZipFile

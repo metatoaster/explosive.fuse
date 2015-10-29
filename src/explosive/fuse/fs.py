@@ -1,9 +1,9 @@
 import logging
 
-from collections import defaultdict
 from errno import ENOENT
-from stat import S_IFDIR, S_IFLNK, S_IFREG
-from sys import argv, exit
+from stat import S_IFDIR
+# from stat import S_IFLNK
+from stat import S_IFREG
 from time import time
 
 from fuse import FuseOSError, Operations, LoggingMixIn

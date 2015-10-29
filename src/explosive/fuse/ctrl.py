@@ -97,7 +97,7 @@ def main(args=None):
         )
 
     try:
-        fuse = FUSE(
+        FUSE(
             ExplosiveFUSE(
                 parsed_args.archives,
                 pathmaker_name=parsed_args.pathmaker_name,
