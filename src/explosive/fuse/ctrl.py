@@ -52,12 +52,11 @@ def get_argparse():
 
     parser.add_argument(
         '-l', '--layout', dest='pathmaker_name', choices=layout_choices,
-        metavar='<strategy>',
+        metavar='<strategy>', default='root',
         help='Directory layout presentation strategy.  '
              'Available strategies are: ' +
              ', '.join(layout_choices) + '. '
-             'Default is `root` for a single archive, `ziproot` for multiple '
-             'archives.'
+             'Default is `root`.'
     )
     parser.add_argument(
         '--layout-info', action='layout_help',
@@ -78,6 +77,9 @@ def get_argparse():
         '-o', '--overwrite', dest='overwrite', action='store_true',
         help='Existing file entries will be overwritten by later file entries '
              'if they share the same generated path.')
+    parser.add_argument(
+        '-n', '--name', dest='include_arcname', action='store_true',
+        help='Prepend the file name of origin archive in generated paths.')
 
     return parser
 
@@ -102,6 +104,7 @@ def main(args=None):
                 parsed_args.archives,
                 pathmaker_name=parsed_args.pathmaker_name,
                 overwrite=parsed_args.overwrite,
+                include_arcname=parsed_args.include_arcname,
             ),
             parsed_args.dir,
             foreground=parsed_args.foreground,

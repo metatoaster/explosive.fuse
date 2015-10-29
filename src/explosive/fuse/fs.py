@@ -38,20 +38,15 @@ class ExplosiveFUSE(LoggingMixIn, Operations):
     by the Operations class).
     """
 
-    def __init__(self, archive_paths, pathmaker_name=None, overwrite=False):
-        # single archive use root, multiple archives use ziproot.
-        if pathmaker_name is None:
-            pathmaker_name = len(archive_paths) > 1 and 'ziproot' or 'root'
-            logger.info(
-                'No layout strategy specified, auto-selected `%s` based on '
-                'the number of input archives (%d).',
-                pathmaker_name, len(archive_paths),
-            )
-
+    def __init__(self, archive_paths, pathmaker_name='root',
+            overwrite=False, include_arcname=False):
+        # if include_arcname is not defined, define it based whether
+        # there is a single or multiple archives.
         self.fd = 0
         self.mapping = DefaultMapper(
             pathmaker_name=pathmaker_name,
             overwrite=overwrite,
+            include_arcname=include_arcname,
         )
         loaded = sum(self.mapping.load_zip(p) for p in archive_paths)
         logger.info('loaded %d zip file(s).', loaded)

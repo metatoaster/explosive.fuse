@@ -7,106 +7,63 @@ class PathmakerTestCase(unittest.TestCase):
 
     def test_default(self):
         self.assertEqual(
-            pathmaker.root('/tmp/some/test.zip', 'path/to/file'),
+            pathmaker.root('path/to/file'),
             (['path', 'to'], 'file'),
         )
 
         self.assertEqual(
-            pathmaker.root('/tmp/some/test.zip', 'rootfile'),
+            pathmaker.root('rootfile'),
             ([], 'rootfile'),
         )
 
         self.assertEqual(
-            pathmaker.root('/tmp/some/test.zip', 'somedir/'),
+            pathmaker.root('somedir/'),
             (['somedir'], ''),
         )
 
         self.assertEqual(
-            pathmaker.root('/tmp/some/test.zip', 'some/nested/dir/'),
+            pathmaker.root('some/nested/dir/'),
             (['some', 'nested', 'dir'], ''),
         )
 
     def test_flatten(self):
         self.assertEqual(
-            pathmaker.flatten('/tmp/some/test.zip', 'path/to/file'),
+            pathmaker.flatten('path/to/file'),
             ([], 'path_to_file'),
         )
 
         self.assertEqual(
-            pathmaker.flatten('/tmp/some/test.zip', 'rootfile'),
+            pathmaker.flatten('rootfile'),
             ([], 'rootfile'),
         )
 
         self.assertEqual(
-            pathmaker.flatten('/tmp/some/test.zip', 'somedir/'),
+            pathmaker.flatten('somedir/'),
             ([], ''),
         )
 
         self.assertEqual(
-            pathmaker.flatten('/tmp/some/test.zip', 'some/nested/dir/'),
+            pathmaker.flatten('some/nested/dir/'),
             ([], ''),
         )
 
     def test_junk(self):
         self.assertEqual(
-            pathmaker.junk('/tmp/some/test.zip', 'path/to/file'),
+            pathmaker.junk('path/to/file'),
             ([], 'file'),
         )
 
         self.assertEqual(
-            pathmaker.junk('/tmp/some/test.zip', 'rootfile'),
+            pathmaker.junk('rootfile'),
             ([], 'rootfile'),
         )
 
         self.assertEqual(
-            pathmaker.junk('/tmp/some/test.zip', 'somedir/'),
+            pathmaker.junk('somedir/'),
             ([], ''),
         )
 
         self.assertEqual(
-            pathmaker.junk('/tmp/some/test.zip', 'some/nested/dir/'),
-            ([], ''),
-        )
-
-    def test_ziproot(self):
-        self.assertEqual(
-            pathmaker.ziproot('/tmp/some/test.zip', 'path/to/file'),
-            (['test.zip', 'path', 'to'], 'file'),
-        )
-
-        self.assertEqual(
-            pathmaker.ziproot('/tmp/some/test.zip', 'rootfile'),
-            (['test.zip'], 'rootfile'),
-        )
-
-        self.assertEqual(
-            pathmaker.ziproot('/tmp/some/test.zip', 'somedir/'),
-            (['test.zip', 'somedir'], ''),
-        )
-
-        self.assertEqual(
-            pathmaker.ziproot('/tmp/some/test.zip', 'some/nested/dir/'),
-            (['test.zip', 'some', 'nested', 'dir'], ''),
-        )
-
-    def test_ziproot_flatten(self):
-        self.assertEqual(
-            pathmaker.ziproot_flatten('/tmp/some/test.zip', 'path/to/file'),
-            ([], 'test.zip_path_to_file'),
-        )
-
-        self.assertEqual(
-            pathmaker.ziproot_flatten('/tmp/some/test.zip', 'rootfile'),
-            ([], 'test.zip_rootfile'),
-        )
-
-        self.assertEqual(
-            pathmaker.ziproot_flatten('/tmp/some/test.zip', 'somedir/'),
-            ([], ''),
-        )
-
-        self.assertEqual(
-            pathmaker.ziproot_flatten(
-                '/tmp/some/test.zip', 'some/nested/dir/'),
+            pathmaker.junk('some/nested/dir/'),
             ([], ''),
         )
