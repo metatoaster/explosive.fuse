@@ -26,30 +26,91 @@ least ``rar``.
 Installation
 ============
 
-ExplosiveFUSE requires the FUSE kernel module for your operating system
-be available and Python 2.7/3.3+/PyPy.  First off install the FUSE
-kernel module if it is not already installed.
-
-For Debian/Ubuntu systems::
-
-    $ sudo apt-get install libfuse-dev
-
-For RedHat/CentOS systems::
-
-    $ sudo yum install fuse-devel
-
-This may or may not work on MacOS X via `FUSE for OS X`_ as the author
-has not tested this.  If this works please inform the author via the
-`issue tracker` for this project.
-
-.. _FUSE for OS X: https://osxfuse.github.io/
-.. _issue tracker: https://github.com/metatoaster/explosive.fuse/issues
-
-Then simply install this package via ``pip``, either in a virtualenv or
-at the system level, example::
+If all system level dependencies are satisified, the installation
+process is simply a single ``pip`` call, like so::
 
     $ pip install explosive.fuse
 
+This can be done either at the system level (i.e. using ``sudo``) to
+make this available for all users on the system, or inside a virtualenv
+for just a single user.
+
+System level dependencies
+-------------------------
+
+ExplosiveFUSE requires the FUSE kernel module for your operating system
+and its userspace tools be available, and Python 2.7/3.3+/PyPy.
+
+First off, install the FUSE kernel module and userspace tools if they
+are not already installed.
+
+Linux
+~~~~~
+
+Arch Linux::
+
+    $ sudo pacman -S fuse
+
+Debian/Ubuntu::
+
+    $ sudo apt-get install fuse
+
+Gentoo (also, please refer to its `wiki entry on FUSE`_)::
+
+    $ sudo emerge --ask sys-fs/fuse
+
+.. _wiki entry on FUSE: https://wiki.gentoo.org/wiki/Filesystem_in_Userspace
+
+RedHat/CentOS/Fedora::
+
+    $ sudo yum install fuse
+
+OS X
+~~~~
+
+This has been somewhat tested through the experimental build features
+provided by Travis-CI, with dependencies installed via `Homebrew`_.
+For installation of Homebrew, please refer to instructions outlined at
+http://brew.sh/.
+
+Once that's done, the packages for `FUSE for OS X`_ and `pyenv`_ (which
+provides Python version management) can be installed using the following
+commands::
+
+    $ brew update
+    $ brew install osxfuse
+    $ brew install pyenv
+    $ pyenv install 3.5.0  # or your desired version of Python
+    $ pyenv global 3.5.0
+    $ pyenv rehash
+
+.. _Homebrew: http://brew.sh
+.. _pyenv: https://github.com/yyuu/pyenv
+.. _FUSE for OS X: https://osxfuse.github.io/
+
+Other installation methods
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This may be installed into the default user specific library directory 
+(typically ``~/.local``) using the following command::
+
+    $ pip install --user explosive.fuse
+
+The executable will then be available at ``~/.local/bin/explode``.
+
+Or be installed in a virtualenv, too::
+
+    $ virtualenv ~/.venv
+    $ source ~/.venv/bin/activate
+    $ pip install explosive.fuse
+
+Naturally, installation from source can be done, and provided ``git`` is
+installed, the latest development version can be done like so::
+
+    $ pip install git+https://github.com/metatoaster/explosive.fuse#egg=explosive.fuse
+
+Alternatively, manual usage of ``git`` and ``python setup.py develop``
+will work also.
 
 Usage
 =====
@@ -106,7 +167,7 @@ completeness sake this is what is provided by a default installation:
 
 flatten
     Flattens the directory structure to the root by replacing all path
-    separators for each file entries with the `_` character.
+    separators for each file entries with the ``_`` character.
 
 junk
     Junk all paths, keep only the basename of file entries.
@@ -121,8 +182,27 @@ ziproot
 ziproot_flatten
     Combining ziproot and flatten. Flattens the directory structure to
     the root by replacing all path separators for each file entries with
-    the `_` character, with all file names prepended with its source
+    the ``_`` character, with all file names prepended with its source
     archive file name.
+
+
+Troubleshooting
+===============
+
+Mounting shows the following error message::
+
+    fusermount: failed to open /etc/fuse.conf: Permission denied
+
+This can be safely ignored, or alternatively have your system's
+adminstrator grant you read access to that file by putting your account
+into the ``fuse`` user group or equivalent on your system, or change the
+permission to that file to world readable, as that file does not contain
+any sensitive information under typical usage.
+
+If you encountered any other problems using this software please file an
+issue using the `issue tracker`_ for this project.
+
+.. _issue tracker: https://github.com/metatoaster/explosive.fuse/issues
 
 
 License
