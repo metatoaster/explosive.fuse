@@ -204,3 +204,43 @@ class DefaultMapperTestCase(unittest.TestCase):
             b'demo4.zip demo/dir1/file5\n')
 
         self.assertEqual(sorted(m.readdir('')), ['demo', 'hello'])
+
+    def test_mapping_overwrite_false(self):
+        target = path('demo1.zip')
+        m = DefaultMapper(overwrite=False)
+        m.mapping = {
+            'file5': ('dummy.zip', 'file5', 1),
+            'file6': ('dummy.zip', 'file6', 1),
+            'file7': ('dummy.zip', 'file7', 1),
+        }
+
+        m.load_zip(target)
+        self.assertEqual(m.mapping, {
+            'file1': (target, 'file1', 33),
+            'file2': (target, 'file2', 33),
+            'file3': (target, 'file3', 33),
+            'file4': (target, 'file4', 33),
+            'file5': ('dummy.zip', 'file5', 1),
+            'file6': ('dummy.zip', 'file6', 1),
+            'file7': ('dummy.zip', 'file7', 1),
+        })
+
+    def test_mapping_overwrite_true(self):
+        target = path('demo1.zip')
+        m = DefaultMapper(overwrite=True)
+        m.mapping = {
+            'file5': ('dummy.zip', 'file5', 1),
+            'file6': ('dummy.zip', 'file6', 1),
+            'file7': ('dummy.zip', 'file7', 1),
+        }
+
+        m.load_zip(target)
+        self.assertEqual(m.mapping, {
+            'file1': (target, 'file1', 33),
+            'file2': (target, 'file2', 33),
+            'file3': (target, 'file3', 33),
+            'file4': (target, 'file4', 33),
+            'file5': (target, 'file5', 33),
+            'file6': (target, 'file6', 33),
+            'file7': ('dummy.zip', 'file7', 1),
+        })

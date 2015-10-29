@@ -38,7 +38,7 @@ class ExplosiveFUSE(LoggingMixIn, Operations):
     by the Operations class).
     """
 
-    def __init__(self, archive_paths, pathmaker_name=None):
+    def __init__(self, archive_paths, pathmaker_name=None, overwrite=False):
         # single archive use root, multiple archives use ziproot.
         if pathmaker_name is None:
             pathmaker_name = len(archive_paths) > 1 and 'ziproot' or 'root'
@@ -49,7 +49,10 @@ class ExplosiveFUSE(LoggingMixIn, Operations):
             )
 
         self.fd = 0
-        self.mapping = DefaultMapper(pathmaker_name=pathmaker_name)
+        self.mapping = DefaultMapper(
+            pathmaker_name=pathmaker_name,
+            overwrite=overwrite,
+        )
         loaded = sum(self.mapping.load_zip(p) for p in archive_paths)
         logger.info('loaded %d zip file(s).', loaded)
 

@@ -20,7 +20,7 @@ class DefaultMapper(object):
     Mapper that tracks the nested structure within a zip file.
     """
 
-    def __init__(self, path=None, pathmaker_name='root'):
+    def __init__(self, path=None, pathmaker_name='root', overwrite=False):
         """
         Initialize the mapping, optionally with a path to a zip file.
 
@@ -29,6 +29,7 @@ class DefaultMapper(object):
         directory.
         """
 
+        self.overwrite = overwrite
         self.pathmaker = getattr(pathmaker, pathmaker_name)
         self.mapping = {}
         if path:
@@ -91,8 +92,9 @@ class DefaultMapper(object):
                 continue
 
             if filename in target:
-                logger.info('`%s` already exists; ignoring', info.filename)
-                continue
+                if not self.overwrite:
+                    logger.info('`%s` already exists; ignoring', info.filename)
+                    continue
             target[filename] = (zipfile_path, info.filename, info.file_size)
 
     def load_zip(self, zipfile_path):

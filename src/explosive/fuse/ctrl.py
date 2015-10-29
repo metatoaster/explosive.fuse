@@ -74,6 +74,10 @@ def get_argparse():
     parser.add_argument(
         'archives', metavar='archives', nargs='+',
         help='The archive(s) to generate directory structures with')
+    parser.add_argument(
+        '-o', '--overwrite', dest='overwrite', action='store_true',
+        help='Existing file entries will be overwritten by later file entries '
+             'if they share the same generated path.')
 
     return parser
 
@@ -96,7 +100,8 @@ def main(args=None):
         fuse = FUSE(
             ExplosiveFUSE(
                 parsed_args.archives,
-                pathmaker_name=parsed_args.pathmaker_name
+                pathmaker_name=parsed_args.pathmaker_name,
+                overwrite=parsed_args.overwrite,
             ),
             parsed_args.dir,
             foreground=parsed_args.foreground,
