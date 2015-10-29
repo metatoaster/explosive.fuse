@@ -68,9 +68,9 @@ class DefaultMapperTestCase(unittest.TestCase):
         bad_target = path('bad.zip')
         missing_target = path('nosuchzip.zip')
         m = DefaultMapper()
-        m.load_zip(bad_target)
-        m.load_zip(missing_target)
-        m.load_zip(object())
+        m.load_archive(bad_target)
+        m.load_archive(missing_target)
+        m.load_archive(object())
         self.assertEqual(m.mapping, {})
 
     def test_mapping_simple(self):
@@ -112,7 +112,7 @@ class DefaultMapperTestCase(unittest.TestCase):
         m = DefaultMapper()
         # create a file entry named 'demo' to block creation of dir
         m.mapping['demo'] = ('somezip.zip', 'notadir', 0)
-        m.load_zip(target)
+        m.load_archive(target)
         self.assertEqual(m.mapping, {'demo': ('somezip.zip', 'notadir', 0)})
 
     def test_mapping_complex_nested(self):
@@ -152,8 +152,8 @@ class DefaultMapperTestCase(unittest.TestCase):
         demo4 = path('demo4.zip')
         m = DefaultMapper()
         # load order matters, new entries will not overwrite old ones.
-        m.load_zip(demo3)
-        m.load_zip(demo4)
+        m.load_archive(demo3)
+        m.load_archive(demo4)
         self.assertEqual(list(sorted(m.mapping.keys())), ['demo', 'hello'])
         self.assertEqual(m.mapping['hello'], (demo4, 'hello', 6))
         self.assertEqual(m.mapping['demo'], {
@@ -214,7 +214,7 @@ class DefaultMapperTestCase(unittest.TestCase):
             'file7': ('dummy.zip', 'file7', 1),
         }
 
-        m.load_zip(target)
+        m.load_archive(target)
         self.assertEqual(m.mapping, {
             'file1': (target, 'file1', 33),
             'file2': (target, 'file2', 33),
@@ -234,7 +234,7 @@ class DefaultMapperTestCase(unittest.TestCase):
             'file7': ('dummy.zip', 'file7', 1),
         }
 
-        m.load_zip(target)
+        m.load_archive(target)
         self.assertEqual(m.mapping, {
             'file1': (target, 'file1', 33),
             'file2': (target, 'file2', 33),

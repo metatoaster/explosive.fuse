@@ -15,13 +15,14 @@ logger = getLogger(__name__)
 
 class DefaultMapper(object):
     """
-    Mapper that tracks the nested structure within a zip file.
+    Mapper that tracks the nested structure within archive files.
     """
 
     def __init__(self, path=None, pathmaker_name='root', overwrite=False,
             include_arcname=False):
         """
-        Initialize the mapping, optionally with a path to a zip file.
+        Initialize the mapping, optionally with a path to an archive
+        file.
 
         Mapping dict keys are names of file or directory, values are
         either a tuple that represent a file, or a dict to represent a
@@ -33,7 +34,7 @@ class DefaultMapper(object):
         self.pathmaker = getattr(pathmaker, pathmaker_name)
         self.mapping = {}
         if path:
-            self.load_zip(path)
+            self.load_archive(path)
 
     def mkdir(self, path_fragments):
         """
@@ -77,12 +78,12 @@ class DefaultMapper(object):
 
         return current
 
-    def _load_infolist(self, zipfile_path, infolist):
-        zipfile_name = basename(zipfile_path) + '/'
+    def _load_infolist(self, archive_path, infolist):
+        archive_name = basename(archive_path) + '/'
 
         for info in infolist:
             if self.include_arcname:
-                ifilename = zipfile_name + info.filename
+                ifilename = archive_name + info.filename
             else:
                 ifilename = info.filename
             frags, filename = self.pathmaker(ifilename)
@@ -104,24 +105,25 @@ class DefaultMapper(object):
                 if not self.overwrite:
                     logger.info('`%s` already exists; ignoring', info.filename)
                     continue
-            target[filename] = (zipfile_path, info.filename, info.file_size)
+            target[filename] = (archive_path, info.filename, info.file_size)
 
-    def load_zip(self, zipfile_path):
+    def load_archive(self, archive_path):
         """
-        Load a zip file identified by zipfile_path into the mapping.
+        Load an archive file identified by archive_path into the
+        mapping.
         """
 
         try:
-            with ZipFile(zipfile_path) as zf:
-                self._load_infolist(zipfile_path, zf.infolist())
-            logger.info('loaded `%s`', zipfile_path)
+            with ZipFile(archive_path) as zf:
+                self._load_infolist(archive_path, zf.infolist())
+            logger.info('loaded `%s`', archive_path)
             return True
         except BadZipFile:
             logger.warning(
-                '`%s` appears to be an invalid zipfile', zipfile_path)
+                '`%s` appears to be an invalid archive file', archive_path)
         except FileNotFoundError:
             logger.warning(
-                '`%s` does not exist.', zipfile_path)
+                '`%s` does not exist.', archive_path)
         except:
             logger.exception('Exception')
         return False
@@ -135,8 +137,8 @@ class DefaultMapper(object):
 
         info = self.traverse(path)
 
-        zipfn, filename, _ = info
-        with ZipFile(zipfn) as zf:
+        archive_filename, filename, _ = info
+        with ZipFile(archive_filename) as zf:
             with zf.open(filename) as f:
                 return f.read()
 

@@ -48,8 +48,8 @@ class ExplosiveFUSE(LoggingMixIn, Operations):
             overwrite=overwrite,
             include_arcname=include_arcname,
         )
-        loaded = sum(self.mapping.load_zip(p) for p in archive_paths)
-        logger.info('loaded %d zip file(s).', loaded)
+        loaded = sum(self.mapping.load_archive(p) for p in archive_paths)
+        logger.info('loaded %d archive(s).', loaded)
 
     def getattr(self, path, fh=None):
         key = path[1:]
