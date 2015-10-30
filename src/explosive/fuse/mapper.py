@@ -31,7 +31,7 @@ class DefaultMapper(object):
 
         self.include_arcname = include_arcname
         self.overwrite = overwrite
-        self.pathmaker = getattr(pathmaker, pathmaker_name)
+        self.pathmaker = getattr(pathmaker, pathmaker_name)()
         self.mapping = {}
         if path:
             self.load_archive(path)
