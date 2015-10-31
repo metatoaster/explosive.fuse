@@ -24,19 +24,25 @@ def default():
     return default
 
 
-def flatten(flatten_char='_'):
+def flatten(char='_'):
     """
     Flattens the directory structure to the root of the mount point by
     replacing all path separators for each file entries with the `_`
     character by default.
     """
 
+    if char == '/':
+        raise ValueError('`char` cannot be `/` path separator.')
+
+    if len(char) != 1:
+        raise ValueError('`char` must be a single character.')
+
     def flatten(inner_path):
         if inner_path.endswith('/'):
             # Directories shouldn't result in a file entry.
             return [], ''
 
-        return [], inner_path.replace('/', flatten_char)
+        return [], inner_path.replace('/', char)
 
     return flatten
 

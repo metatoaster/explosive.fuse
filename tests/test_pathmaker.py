@@ -30,6 +30,19 @@ class PathmakerTestCase(unittest.TestCase):
             ('some/nested/dir/', ([], '')),
         ])
 
+        with self.assertRaises(ValueError) as cm:
+            pathmaker.flatten('/')
+
+        with self.assertRaises(ValueError) as cm:
+            pathmaker.flatten('hi')
+
+        self.assertPathmaker(pathmaker.flatten('.'), [
+            ('path/to/file', ([], 'path.to.file')),
+            ('rootfile', ([], 'rootfile')),
+            ('somedir/', ([], '')),
+            ('some/nested/dir/', ([], '')),
+        ])
+
     def test_junk(self):
         self.assertPathmaker(pathmaker.junk(), [
             ('path/to/file', ([], 'file')),
