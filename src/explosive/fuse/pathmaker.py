@@ -32,10 +32,10 @@ def flatten(char='_'):
     """
 
     if char == '/':
-        raise ValueError('`char` cannot be `/` path separator.')
+        raise ValueError("'char' cannot be '/' path separator")
 
     if len(char) != 1:
-        raise ValueError('`char` must be a single character.')
+        raise ValueError("'char' must be a single character")
 
     def flatten(inner_path):
         if inner_path.endswith('/'):
@@ -59,7 +59,7 @@ def junk(keep='0'):
     """
 
     if not re.match(r"^[-+]?\d+$", keep):
-        raise ValueError('`keep` must be a number')
+        raise ValueError("'keep' must be a number")
 
     level = int(keep)
 
@@ -94,14 +94,19 @@ def _process_arg(arg):
     g = globals()
     args = _tokenize_arg(arg)
     if args[0] not in __all__:
-        raise ValueError('No such pathmaker')
+        raise ValueError("invalid choice: '%s' (choose from '%s')" % (
+            args[0], "', '".join(__all__),
+        ))
     pm = g.get(args[0])
     if pm is None:  # pragma: no cover
         # this really shouldn't happen unless something did a naughty to
         # __all__
-        raise ValueError('No such pathmaker')
+        raise ValueError(
+            "Unable to instantiate '%s' as it is missing" % args[0])
 
     try:
         return pm(*args[1:])
     except TypeError:
-        raise ValueError('Invalid argument')
+        raise ValueError("invalid number of arguments to '%s'" % args[0])
+    except ValueError as e:
+        raise ValueError("invalid argument to '%s': %s" % (args[0], e.args[0]))

@@ -97,8 +97,15 @@ class ProcessArgTestCase(unittest.TestCase):
         self.assertEqual(pathmaker._process_arg('flatten').__name__, 'flatten')
         self.assertEqual(pathmaker._process_arg('junk').__name__, 'junk')
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError) as cm:
             pathmaker._process_arg('nosuchpm')
+
+        if len(pathmaker.__all__) == 3:
+            self.assertEqual(
+                cm.exception.args[0],
+                "invalid choice: 'nosuchpm' (choose from 'default', "
+                "'flatten', 'junk')",
+            )
 
     def test_process_callable(self):
         self.assertTrue(callable(pathmaker._process_arg('default')))
@@ -109,8 +116,13 @@ class ProcessArgTestCase(unittest.TestCase):
         f = pathmaker._process_arg('default')
         self.assertEqual(f('path/to/file'), (['path', 'to',], 'file'))
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError) as cm:
             pathmaker._process_arg('default:hihihi')
+
+        self.assertEqual(
+            cm.exception.args[0],
+            "invalid number of arguments to 'default'",
+        )
 
     def test_process_flatten(self):
         f = pathmaker._process_arg('flatten')
@@ -119,8 +131,13 @@ class ProcessArgTestCase(unittest.TestCase):
         f = pathmaker._process_arg('flatten:\\:')
         self.assertEqual(f('path/to/file'), ([], 'path:to:file'))
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError) as cm:
             pathmaker._process_arg('flatten:hihihi')
+
+        self.assertEqual(
+            cm.exception.args[0],
+            "invalid argument to 'flatten': 'char' must be a single character",
+        )
 
     def test_process_junk(self):
         f = pathmaker._process_arg('junk:1')
@@ -128,3 +145,11 @@ class ProcessArgTestCase(unittest.TestCase):
 
         f = pathmaker._process_arg('junk:-1')
         self.assertEqual(f('path/to/file'), (['to'], 'file'))
+
+        with self.assertRaises(ValueError) as cm:
+            pathmaker._process_arg('junk:hihihi')
+
+        self.assertEqual(
+            cm.exception.args[0],
+            "invalid argument to 'junk': 'keep' must be a number",
+        )
