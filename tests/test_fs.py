@@ -14,13 +14,13 @@ class FsTestCase(unittest.TestCase):
 
     def test_simple(self):
         fs = ExplosiveFUSE([path('demo1.zip')])
-        self.assertIs(fs.mapping.pathmaker.__name__, 'default')
+        self.assertEqual(fs.mapping.pathmaker.__name__, 'default')
 
         fs = ExplosiveFUSE([path('demo1.zip')], _pathmaker=pathmaker.default())
-        self.assertIs(fs.mapping.pathmaker.__name__, 'default')
+        self.assertEqual(fs.mapping.pathmaker.__name__, 'default')
 
         fs = ExplosiveFUSE([path('demo1.zip')], pathmaker_name='junk')
-        self.assertIs(fs.mapping.pathmaker.__name__, 'junk')
+        self.assertEqual(fs.mapping.pathmaker.__name__, 'junk')
 
     def test_getattr(self):
         fs = ExplosiveFUSE([path('demo1.zip')])
