@@ -1,15 +1,22 @@
 Changelog
 =========
 
-0.2 (2015-??-??)
+0.2 (2015-10-31)
 ----------------
 
-- Removed specialized archive layout strategies, replaced it with a
-  flag that controls whether the name of archive is to be prepended,
-  being the ``-n`` flag.
-- Internally, the pathmakers have been changed back again to taking only
-  the single path parameter, and removed all zip* pathmakers.
-- Implemented the overwrite flag (``-o``).
+- Removed specialized archive layout strategies (i.e. the zip* ones)
+- By default, basename of archive will be prepended to the path for each
+  file entries.  This behavior can directly be disabled using the
+  ``--omit-arcname`` flag.  (Naturally, a layout strategy can still
+  modify that path, like ``junk``.
+- All pathmaker callables are now actually factories that produce the
+  actual pathmaker.  They can now take arguments to influence how the
+  produced pathmaker behaves.  The arguments can be entered using the
+  extended ``-l`` or ``--layout`` syntax.  Details documented in
+  ``--layout-info``.
+- Implemented the ``--overwrite`` flag, allowing newer entries to
+  "overwrite" existing ones.
+- A number of other internal API changes.
 
 0.1 (2015-10-26)
 ----------------
