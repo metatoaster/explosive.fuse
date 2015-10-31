@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+- Mappings now use absolute path to ensure this works in daemon mode.
+
 0.2 (2015-10-31)
 ----------------
 

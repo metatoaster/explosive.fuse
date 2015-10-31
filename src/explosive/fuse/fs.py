@@ -1,4 +1,5 @@
 import logging
+from os.path import abspath
 
 from errno import ENOENT
 from stat import S_IFDIR
@@ -49,7 +50,8 @@ class ExplosiveFUSE(LoggingMixIn, Operations):
             overwrite=overwrite,
             include_arcname=include_arcname,
         )
-        loaded = sum(self.mapping.load_archive(p) for p in archive_paths)
+        loaded = sum(self.mapping.load_archive(abspath(p))
+                     for p in archive_paths)
         logger.info('loaded %d archive(s).', loaded)
 
     def getattr(self, path, fh=None):
