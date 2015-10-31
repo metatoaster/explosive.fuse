@@ -18,8 +18,8 @@ class DefaultMapper(object):
     Mapper that tracks the nested structure within archive files.
     """
 
-    def __init__(self, path=None, pathmaker_name='default', overwrite=False,
-            include_arcname=False):
+    def __init__(self, path=None, pathmaker_name='default', _pathmaker=None,
+            overwrite=False, include_arcname=False):
         """
         Initialize the mapping, optionally with a path to an archive
         file.
@@ -31,7 +31,10 @@ class DefaultMapper(object):
 
         self.include_arcname = include_arcname
         self.overwrite = overwrite
-        self.pathmaker = getattr(pathmaker, pathmaker_name)()
+        if _pathmaker:
+            self.pathmaker = _pathmaker
+        else:
+            self.pathmaker = getattr(pathmaker, pathmaker_name)()
         self.mapping = {}
         if path:
             self.load_archive(path)

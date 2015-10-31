@@ -16,6 +16,9 @@ class FsTestCase(unittest.TestCase):
         fs = ExplosiveFUSE([path('demo1.zip')])
         self.assertIs(fs.mapping.pathmaker.__name__, 'default')
 
+        fs = ExplosiveFUSE([path('demo1.zip')], _pathmaker=pathmaker.default())
+        self.assertIs(fs.mapping.pathmaker.__name__, 'default')
+
         fs = ExplosiveFUSE([path('demo1.zip')], pathmaker_name='junk')
         self.assertIs(fs.mapping.pathmaker.__name__, 'junk')
 

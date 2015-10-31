@@ -1,8 +1,10 @@
 import sys
 import logging
 
+from argparse import ArgumentError
 from argparse import ArgumentParser
 from argparse import Action
+from argparse import _StoreAction
 from argparse import HelpFormatter
 from fuse import FUSE
 
@@ -36,6 +38,18 @@ class _LayoutHelp(Action):
         sys.exit(0)
 
 
+class _PathmakerChoiceStoreAction(_StoreAction):
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        try:
+            pm = pathmaker._process_arg(values)
+            # pass pm as values as it is the callable to be used.
+            return super(_PathmakerChoiceStoreAction, self).__call__(
+                parser, namespace, pm, option_string)
+        except ValueError as e:
+            raise ArgumentError(self, e.args[0])
+
+
 def get_argparse():
     layout_choices = sorted(
         i for i in pathmaker.__all__
@@ -47,10 +61,11 @@ def get_argparse():
                     'filesystem, carefully.'
     )
     parser.register('action', 'layout_help', _LayoutHelp)
+    parser.register('action', 'pathmaker_store', _PathmakerChoiceStoreAction)
 
     parser.add_argument(
-        '-l', '--layout', dest='pathmaker_name', choices=layout_choices,
-        metavar='<strategy>', default='default',
+        '-l', '--layout', dest='pathmaker', action='pathmaker_store',
+        metavar='<strategy>', default=pathmaker.default(),
         help='Directory layout presentation strategy.  '
              'Available strategies are: ' +
              ', '.join(layout_choices) + '. '
@@ -101,7 +116,7 @@ def main(args=None):
         FUSE(
             ExplosiveFUSE(
                 parsed_args.archives,
-                pathmaker_name=parsed_args.pathmaker_name,
+                _pathmaker=parsed_args.pathmaker,
                 overwrite=parsed_args.overwrite,
                 include_arcname=parsed_args.include_arcname,
             ),
