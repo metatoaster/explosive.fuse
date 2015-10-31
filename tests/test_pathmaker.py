@@ -51,6 +51,23 @@ class PathmakerTestCase(unittest.TestCase):
             ('some/nested/dir/', ([], '')),
         ])
 
+        with self.assertRaises(ValueError) as cm:
+            pathmaker.junk('/')
+
+        self.assertPathmaker(pathmaker.junk('1'), [
+            ('path/to/file', (['path'], 'file')),
+            ('path/file', (['path'], 'file')),
+            ('path/to/some/file', (['path'], 'file')),
+            ('rootfile', ([], 'rootfile')),
+            ('somedir/', (['somedir'], '')),
+            ('some/nested/dir/', (['some'], '')),
+        ])
+
+        self.assertPathmaker(pathmaker.junk('2'), [
+            ('path/to/file', (['path', 'to'], 'file')),
+            ('path/to/some/file', (['path', 'to'], 'file')),
+        ])
+
 
 class ProcessArgTestCase(unittest.TestCase):
 
@@ -80,3 +97,6 @@ class ProcessArgTestCase(unittest.TestCase):
 
         f = pathmaker._process_arg('flatten:\\:')
         self.assertEqual(f('path/to/file'), ([], 'path:to:file'))
+
+        f = pathmaker._process_arg('junk:1')
+        self.assertEqual(f('path/to/file'), (['path'], 'file'))

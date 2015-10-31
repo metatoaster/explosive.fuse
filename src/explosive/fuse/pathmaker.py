@@ -1,4 +1,4 @@
-from os.path import basename
+import re
 
 FLATTEN_CHAR = '_'
 
@@ -47,13 +47,25 @@ def flatten(char='_'):
     return flatten
 
 
-def junk():
+def junk(keep='0'):
     """
-    Junk all paths, keep only the basename of file entries.
+    Junk all paths, keep only the basename of file entries up to the
+    level specified.
     """
 
+    if not keep.isdigit():
+        raise ValueError('`keep` must be a number')
+
+    level = int(keep)
+
     def junk(inner_path):
-        return [], basename(inner_path)  # basename will truncate dirs.
+        # Special case where no path separator.
+        if '/' not in inner_path:
+            return [], inner_path
+
+        dirname, basename = inner_path.rsplit('/', 1)
+        frags = dirname.split('/')[:level]
+        return frags, basename
 
     return junk
 
