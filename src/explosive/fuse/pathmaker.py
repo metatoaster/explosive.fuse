@@ -96,7 +96,9 @@ def _process_arg(arg):
     if args[0] not in __all__:
         raise ValueError('No such pathmaker')
     pm = g.get(args[0])
-    if pm is None:
+    if pm is None:  # pragma: no cover
+        # this really shouldn't happen unless something did a naughty to
+        # __all__
         raise ValueError('No such pathmaker')
 
     try:

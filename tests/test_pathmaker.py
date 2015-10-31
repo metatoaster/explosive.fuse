@@ -97,10 +97,20 @@ class ProcessArgTestCase(unittest.TestCase):
         self.assertEqual(pathmaker._process_arg('flatten').__name__, 'flatten')
         self.assertEqual(pathmaker._process_arg('junk').__name__, 'junk')
 
+        with self.assertRaises(ValueError):
+            pathmaker._process_arg('nosuchpm')
+
     def test_process_callable(self):
         self.assertTrue(callable(pathmaker._process_arg('default')))
         self.assertTrue(callable(pathmaker._process_arg('flatten')))
         self.assertTrue(callable(pathmaker._process_arg('junk')))
+
+    def test_process_default(self):
+        f = pathmaker._process_arg('default')
+        self.assertEqual(f('path/to/file'), (['path', 'to',], 'file'))
+
+        with self.assertRaises(ValueError):
+            pathmaker._process_arg('default:hihihi')
 
     def test_process_flatten(self):
         f = pathmaker._process_arg('flatten')
@@ -108,6 +118,9 @@ class ProcessArgTestCase(unittest.TestCase):
 
         f = pathmaker._process_arg('flatten:\\:')
         self.assertEqual(f('path/to/file'), ([], 'path:to:file'))
+
+        with self.assertRaises(ValueError):
+            pathmaker._process_arg('flatten:hihihi')
 
     def test_process_junk(self):
         f = pathmaker._process_arg('junk:1')
