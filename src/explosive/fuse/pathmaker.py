@@ -50,3 +50,30 @@ def junk():
         return [], basename(inner_path)  # basename will truncate dirs.
 
     return junk
+
+
+# TODO consider keeping the "plugins" within a class either by some
+# sort of registration mechanism or other.
+
+def _tokenize_arg(arg):
+    # limitations: no empty parameters.
+    return [i.replace('\\:', ':')
+            for i in re.findall(r'((?:[^:\\]*(?:\\.)?)+)', arg) if i]
+
+def _process_arg(arg):
+    """
+    Convert the string argument into a pathmaker callable.
+    """
+
+    g = globals()
+    args = _tokenize_arg(arg)
+    if args[0] not in __all__:
+        raise ValueError('No such pathmaker')
+    pm = g.get(args[0])
+    if pm is None:
+        raise ValueError('No such pathmaker')
+
+    try:
+        return pm(*args[1:])
+    except TypeError:
+        raise ValueError('Invalid argument')
