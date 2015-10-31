@@ -25,11 +25,14 @@ class _LayoutHelp(Action):
         ]
         formatter = HelpFormatter('')
         formatter.add_text(
-            'An explicit layout strategy can be specified.  This is to '
-            'instruct how ExplosiveFUSE should present file entries across '
-            'all archive files within its mount point.  Do note that '
-            'the final outcome of the layout is also influenced by the usage '
-            'of the ``--overwrite`` and the ``--omit-arcname`` flags.'
+            "An explicit layout strategy can be specified.  This is to "
+            "instruct how ExplosiveFUSE should present file entries across "
+            "all archive files within its mount point.  Do note that "
+            "the final outcome of the layout is also influenced by the usage "
+            "of the '--overwrite' and the '--omit-arcname' flags, and "
+            "arguments which may associate with each of the strategies. "
+            "They are specified by appending ':', followed by the value of "
+            "each positional argument(s)."
         )
         formatter.start_section('Available layout strategies')
         formatter.add_arguments(actions)
@@ -66,14 +69,15 @@ def get_argparse():
     parser.add_argument(
         '-l', '--layout', dest='pathmaker', action='pathmaker_store',
         metavar='<strategy>', default=pathmaker.default(),
-        help='Directory layout presentation strategy.  '
-             'Available strategies are: ' +
-             ', '.join(layout_choices) + '. '
-             'If unspecified, the default is `%(default)s`.'
+        help="Directory layout presentation strategy.  "
+             "Available strategies are: '" +
+             "', '".join(layout_choices) + "'. "
+             "If unspecified, the default is '%(default)s'."
     )
     parser.add_argument(
         '--layout-info', action='layout_help',
-        help='Information on the various layout presentation strategy.')
+        help='More detailed information on the usage of layout presentation '
+             'strategy (such as extra arguments).')
     parser.add_argument(
         '-f', '--foreground', dest='foreground', action='store_true',
         help='Run in foreground.')

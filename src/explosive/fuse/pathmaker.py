@@ -27,8 +27,10 @@ def default():
 def flatten(char='_'):
     """
     Flattens the directory structure to the root of the mount point by
-    replacing all path separators for each file entries with the `_`
-    character by default.
+    replacing all path separators for each file entries with the '_'
+    character by default. This character can be specified by using the
+    argument syntax (e.g. use '-l flatten:-' will replace all path
+    separators with the '-' character.)
     """
 
     if char == '/':
@@ -53,9 +55,9 @@ def junk(keep='0'):
     specified for a positive keep number, otherwise junking all but the
     absolute number of keep levels previous to the basename of the
     filename for a negative keep number.  Default is to keep no
-    directories.  Useful value is ``1`` if it is desirable to keep the
-    source archive name as a container directory (i.e. ``-l junk:1``)
-    if ``--omit-arcname`` is not used.
+    directories.  Useful value is '1' if it is desirable to keep the
+    source archive name as a container directory (i.e. '-l junk:1')
+    if '--omit-arcname' is not used.
     """
 
     if not re.match(r"^[-+]?\d+$", keep):
