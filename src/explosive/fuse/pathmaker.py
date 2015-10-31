@@ -49,11 +49,16 @@ def flatten(char='_'):
 
 def junk(keep='0'):
     """
-    Junk all paths, keep only the basename of file entries up to the
-    level specified.
+    Junk paths, keep only directories counting from root up to the level
+    specified for a positive keep number, otherwise junking all but the
+    absolute number of keep levels previous to the basename of the
+    filename for a negative keep number.  Default is to keep no
+    directories.  Useful value is ``1`` if it is desirable to keep the
+    source archive name as a container directory (i.e. ``-l junk:1``)
+    if ``--omit-arcname`` is not used.
     """
 
-    if not keep.isdigit():
+    if not re.match(r"^[-+]?\d+$", keep):
         raise ValueError('`keep` must be a number')
 
     level = int(keep)
@@ -64,7 +69,10 @@ def junk(keep='0'):
             return [], inner_path
 
         dirname, basename = inner_path.rsplit('/', 1)
-        frags = dirname.split('/')[:level]
+        if level >= 0:
+            frags = dirname.split('/')[:level]
+        else:
+            frags = dirname.split('/')[level:]
         return frags, basename
 
     return junk

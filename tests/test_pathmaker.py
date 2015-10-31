@@ -54,6 +54,12 @@ class PathmakerTestCase(unittest.TestCase):
         with self.assertRaises(ValueError) as cm:
             pathmaker.junk('/')
 
+        with self.assertRaises(ValueError) as cm:
+            pathmaker.junk('1.0')
+
+        with self.assertRaises(ValueError) as cm:
+            pathmaker.junk('1-')
+
         self.assertPathmaker(pathmaker.junk('1'), [
             ('path/to/file', (['path'], 'file')),
             ('path/file', (['path'], 'file')),
@@ -66,6 +72,11 @@ class PathmakerTestCase(unittest.TestCase):
         self.assertPathmaker(pathmaker.junk('2'), [
             ('path/to/file', (['path', 'to'], 'file')),
             ('path/to/some/file', (['path', 'to'], 'file')),
+        ])
+
+        self.assertPathmaker(pathmaker.junk('-2'), [
+            ('path/to/file', (['path', 'to'], 'file')),
+            ('path/to/some/file', (['to', 'some'], 'file')),
         ])
 
 
@@ -98,5 +109,9 @@ class ProcessArgTestCase(unittest.TestCase):
         f = pathmaker._process_arg('flatten:\\:')
         self.assertEqual(f('path/to/file'), ([], 'path:to:file'))
 
+    def test_process_junk(self):
         f = pathmaker._process_arg('junk:1')
         self.assertEqual(f('path/to/file'), (['path'], 'file'))
+
+        f = pathmaker._process_arg('junk:-1')
+        self.assertEqual(f('path/to/file'), (['to'], 'file'))
