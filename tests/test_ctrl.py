@@ -1,10 +1,15 @@
 import sys
+import os
 from argparse import ArgumentParser
 from argparse import ArgumentError
 from contextlib import contextmanager
 import unittest
 from os.path import dirname
 from os.path import join
+from multiprocessing import Process
+from subprocess import Popen
+from subprocess import PIPE
+from tempfile import mkdtemp
 
 from explosive.fuse import ctrl
 
@@ -32,6 +37,9 @@ class Output(object):
 
     def write(self, s):
         self.items.append(s)
+
+    def flush(self):
+        pass
 
 
 @contextmanager
@@ -75,7 +83,7 @@ class IntegrationTestCase(unittest.TestCase):
     def test_failure(self):
         with capture_stdio() as stdio:
             with self.assertRaises(SystemExit):
-                ctrl.main(['-d', 'somezip.zip', '/tmp/to/no/such/dir'])
+                ctrl.main(['-d', '/tmp/to/no/such/dir', 'somezip.zip'])
 
     def test_invalid_layout_choice(self):
         with capture_stdio() as stdio:
@@ -97,3 +105,46 @@ class IntegrationTestCase(unittest.TestCase):
                 "error: argument -l/--layout: "
                 "invalid argument to 'junk': 'keep' must be a number\n"
             ))
+
+
+class AcceptanceTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.mountpoint = mkdtemp()
+        # maybe validate that this works?
+        # subprocess.check_output(["fusermount", "-V"])
+
+    def tearDown(self):
+        sp = Popen(['fusermount', '-u', self.mountpoint],
+                   stdout=PIPE, stderr=PIPE)
+        result = sp.communicate()
+
+    def test_success_basic(self):
+        dummy1 = path('demo1.zip')
+        dummy2 = path('demo2.zip')
+
+        # This will terminate, so spawn a separate process.
+        p = Process(
+            target=ctrl.main, args=(['-d', self.mountpoint, dummy1, dummy2],))
+        p.start()
+        p.join()
+
+        self.assertEqual(
+            sorted(os.listdir(self.mountpoint)),
+            ['demo1.zip', 'demo2.zip'],
+        )
+
+        self.assertEqual(
+            sorted(os.listdir(join(self.mountpoint, 'demo1.zip'))),
+            ['file1', 'file2', 'file3', 'file4', 'file5', 'file6']
+        )
+
+        self.assertEqual(
+            sorted(os.listdir(join(self.mountpoint, 'demo2.zip'))),
+            ['demo']
+        )
+
+        self.assertEqual(
+            sorted(os.listdir(join(self.mountpoint, 'demo2.zip', 'demo'))),
+            ['file1', 'file2', 'file3', 'file4', 'file5', 'file6']
+        )
