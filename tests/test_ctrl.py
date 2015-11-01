@@ -107,6 +107,15 @@ class IntegrationTestCase(unittest.TestCase):
             ))
 
 
+# Acceptance testing
+# to enable, do something like:
+# $ ACCEPTANCE=1 python setup.py test
+#
+# Disabling by default due to issues with getting this working reliably
+# with other CI systems.
+
+@unittest.skipUnless(os.environ.get('ACCEPTANCE'),
+                     'skipping acceptance test by default')
 class AcceptanceTestCase(unittest.TestCase):
 
     def setUp(self):

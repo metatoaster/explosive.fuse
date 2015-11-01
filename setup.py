@@ -39,6 +39,7 @@ setup(name='explosive.fuse',
           # -*- Extra requirements: -*-
           'fusepy',
       ],
+      test_suite="tests",
       entry_points="""
       # -*- Entry points: -*-
       [console_scripts]
