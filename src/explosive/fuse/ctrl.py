@@ -12,6 +12,31 @@ from explosive.fuse import pathmaker
 from explosive.fuse.fs import ExplosiveFUSE
 
 
+class _Version(Action):
+
+    def __init__(self, *a, **kw):
+        super(_Version, self).__init__(nargs=0, *a, **kw)
+
+    def __call__(self, *a, **kw):
+        try:
+            import pkg_resources
+            r = pkg_resources.require('explosive.fuse')[0]
+            print('explode ' + r.version)
+            print(repr(r))
+        except ImportError:  # pragma: no cover
+            print('explode ?')
+        except pkg_resources.DistributionNotFound:  # pragma: no cover
+            print('explode ?')
+        print(
+            'License GPLv3+: GNU GPL version 3 or later '
+            '<http://gnu.org/licenses/gpl.html>.\n'
+            'This is free software: '
+            'you are free to change and redistribute it.\n'
+            'There is NO WARRANTY, to the extent permitted by law.'
+        )
+        sys.exit(0)
+
+
 class _LayoutHelp(Action):
 
     def __init__(self, *a, **kw):
@@ -63,6 +88,7 @@ def get_argparse():
         description='ExplosiveFUSE: Explode compressed files into a '
                     'filesystem, carefully.'
     )
+    parser.register('action', 'version_verbose', _Version)
     parser.register('action', 'layout_help', _LayoutHelp)
     parser.register('action', 'pathmaker_store', _PathmakerChoiceStoreAction)
 
@@ -98,6 +124,9 @@ def get_argparse():
         '--omit-arcname', dest='include_arcname', action='store_false',
         help='Omit the basename of the origin archive from the generated '
              'paths.')
+    parser.add_argument(
+        '-V', '--version', action='version_verbose',
+        help='Print version information and exit.')
 
     return parser
 

@@ -79,6 +79,13 @@ class IntegrationTestCase(unittest.TestCase):
         with capture_stdio() as stdio:
             with self.assertRaises(SystemExit):
                 ctrl.main(['--layout-info'])
+            # perhaps include actual equality check.
+
+    def test_version(self):
+        with capture_stdio() as stdio:
+            with self.assertRaises(SystemExit):
+                ctrl.main(['--version'])
+            # perhaps include actual equality check.
 
     def test_failure(self):
         with capture_stdio() as stdio:
