@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 now = time()
 # Turn this into a type that always return those key/values to avoid
 # data repetition.
-file_records = dict(
+file_record = dict(
     st_mode=(S_IFREG | 0o444),
     st_nlink=1,
     st_ctime=now,
@@ -65,7 +65,7 @@ class ExplosiveFUSE(LoggingMixIn, Operations):
             return dir_record
 
         result = {'st_size': info[2]}
-        result.update(file_records)
+        result.update(file_record)
         return result
 
     def open(self, path, flags):
