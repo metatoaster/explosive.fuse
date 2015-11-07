@@ -85,6 +85,9 @@ class DefaultMapper(object):
         """
 
         path_fragments = path and path.split('/') or []
+        return self._traverse(path_fragments)
+
+    def _traverse(self, path_fragments):
         current = self.mapping
 
         for frag in path_fragments:
@@ -134,6 +137,67 @@ class DefaultMapper(object):
                     logger.info('`%s` already exists; ignoring', info.filename)
                     continue
             target[filename] = (archive_path, info.filename, info.file_size)
+
+    def _unload_functions(self):
+        """
+        Return a tuple of needed functions for unloading an archive out
+        of the mappings.
+        """
+
+        if self.overwrite:
+            # check the rightmost (newest) item, pop from right
+            return -1, deque.pop
+        else:
+            # check the leftmost (oldest) item, pop from left
+            return 0, deque.popleft
+
+    def _unload_infolist(self, archive_path):
+        # pop this out right away to mark this as to be pruned off.
+        ifilenames = self.archive_ifilenames.pop(archive_path)
+        index, pop = self._unload_functions()
+        for ifilename in ifilenames:
+            # lookup via the reverse mapping to see that this ifilename
+            # is the active check that the current active
+            ifilename_paths = self.reverse_mapping[ifilename]
+            # XXX could this[1] be made true?
+            # ifilename_paths[index] == (archive_path, filename, size)?
+            if ifilename_paths[index] != archive_path:
+                # leave the reverse mapping in place.
+                continue
+
+            # We have a match, time to clean up to the latest fresh and
+            # active entry that other previous calls to this function
+            # have left behind.
+            try:
+                while ifilename_paths[index] not in self.archive_ifilenames:
+                    pop(ifilename_paths)
+            except IndexError:
+                # This no longer exists in any active archive.
+                self.reverse_mapping.pop(ifilename)
+
+            # Remove from self.mapping.
+            frags, filename = self.pathmaker(ifilename)
+            info = self._traverse(frags)
+            if not info is None:
+                # The file's directory may not have been added to
+                # self.mapping, if its creation may have been blocked
+                # by another file.
+                if filename in info and info[filename][0] == archive_path:
+                    # Only remove, for the same reason as above.
+                    info.pop(filename)
+                # XXX filename could be empty, does it mean the
+                # directory can be removed if empty?
+
+            # XXX if [1] is true, could we simply replace that?
+
+            # if ifilename_paths is not empty, it may be possible to
+            # restore that entry with the newer (or previous) "version"
+            # from the archive, if it also resolves to a file, but this
+            # will need more thought to do, given that files and dirs
+            # are two different types.
+
+        # discard the date tracking.
+        self.archives.pop(archive_path)
 
     def load_archive(self, archive_path):
         """

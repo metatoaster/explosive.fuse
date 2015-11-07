@@ -260,6 +260,184 @@ class DefaultMapperTestCase(unittest.TestCase):
             'demo/file6': ['/tmp/demo2.zip'],
         })
 
+    def test_unload_infolist_simple(self):
+        demo1 = path('demo1.zip')
+
+        m = DefaultMapper()
+        with ZipFile(demo1) as zf:
+            m._load_infolist('/tmp/demo1.zip', zf.infolist())
+
+        m._unload_infolist('/tmp/demo1.zip')
+
+        self.assertEqual(m.mapping, {})
+        self.assertEqual(m.reverse_mapping, {})
+        self.assertEqual(m.archives, {})
+        self.assertEqual(m.archive_ifilenames, {})
+
+    def test_unload_infolist_multiple(self):
+        demo = path('demo2.zip')
+
+        m = DefaultMapper()
+        # XXX should just store the zf.infolist() somewhere.
+        with ZipFile(demo) as zf:
+            m._load_infolist('/tmp/demo1.zip', zf.infolist())
+            m._load_infolist('/tmp/demo2.zip', zf.infolist())
+            m._load_infolist('/tmp/demo3.zip', zf.infolist())
+
+        self.assertEqual(
+            list(m.reverse_mapping['demo/']),
+            ['/tmp/demo1.zip', '/tmp/demo2.zip', '/tmp/demo3.zip']
+        )
+
+        # lazy way to check
+        old_reverse_mapping = str(m.reverse_mapping)
+
+        m._unload_infolist('/tmp/demo2.zip')
+
+        # Not the oldest entry
+        self.assertEqual(m.mapping['demo'], {
+            'file1': ('/tmp/demo1.zip', 'demo/file1', 33),
+            'file2': ('/tmp/demo1.zip', 'demo/file2', 33),
+            'file3': ('/tmp/demo1.zip', 'demo/file3', 33),
+            'file4': ('/tmp/demo1.zip', 'demo/file4', 33),
+            'file5': ('/tmp/demo1.zip', 'demo/file5', 33),
+            'file6': ('/tmp/demo1.zip', 'demo/file6', 33),
+        })
+        self.assertEqual(str(m.reverse_mapping), old_reverse_mapping)
+        self.assertEqual(len(m.archives), 2)
+        self.assertNotIn('/tmp/demo2.zip', m.archives)
+        self.assertEqual(
+            list(m.archive_ifilenames.keys()), list(m.archives.keys()))
+
+        with self.assertRaises(KeyError):
+            m._unload_infolist('/tmp/demo2.zip')
+
+        m._unload_infolist('/tmp/demo1.zip')
+        # TODO update this if we figure out how to restore the entries
+        # for this.  May need to use the actual path if we need to get
+        # the code to read the archives again.  Maybe collate the list
+        # of these conflicts and pass to a loader that will only parse
+        # the affected archives and only add paths back to the mapping
+        # iff the filename in the info generates the same ifilepath to
+        # be added.
+        # Might just be easier to leave a control file and regenerate
+        # whenever a user touches it.
+        self.assertEqual(m.mapping, {'demo': {}})
+        self.assertEqual(list(m.reverse_mapping['demo/']), ['/tmp/demo3.zip'])
+        self.assertEqual(sorted(m.archives.keys()), ['/tmp/demo3.zip'])
+        self.assertEqual(
+            sorted(m.archive_ifilenames['/tmp/demo3.zip']), [
+                'demo/', 'demo/file1', 'demo/file2', 'demo/file3',
+                'demo/file4', 'demo/file5', 'demo/file6'
+        ])
+
+        # finally, unload the final one.
+        m._unload_infolist('/tmp/demo3.zip')
+
+        # XXX note that directories cannot be removed due to how they
+        # are stored, and how the order may result them to be checked
+        # for removal first before all the files in that directory for
+        # the archive are removed.
+        self.assertEqual(m.mapping, {'demo': {}})
+        self.assertEqual(m.reverse_mapping, {})
+        self.assertEqual(m.archives, {})
+        self.assertEqual(m.archive_ifilenames, {})
+
+    def test_unload_infolist_multiple_reload(self):
+        demo = path('demo2.zip')
+
+        m = DefaultMapper()
+        with ZipFile(demo) as zf:
+            m._load_infolist('/tmp/demo1.zip', zf.infolist())
+            m._load_infolist('/tmp/demo2.zip', zf.infolist())
+            m._load_infolist('/tmp/demo3.zip', zf.infolist())
+
+        m._unload_infolist('/tmp/demo1.zip')
+        self.assertEqual(m.mapping, {'demo': {}})
+
+        with ZipFile(demo) as zf:
+            m._load_infolist('/tmp/demo4.zip', zf.infolist())
+
+        d4list = {
+            'file1': ('/tmp/demo4.zip', 'demo/file1', 33),
+            'file2': ('/tmp/demo4.zip', 'demo/file2', 33),
+            'file3': ('/tmp/demo4.zip', 'demo/file3', 33),
+            'file4': ('/tmp/demo4.zip', 'demo/file4', 33),
+            'file5': ('/tmp/demo4.zip', 'demo/file5', 33),
+            'file6': ('/tmp/demo4.zip', 'demo/file6', 33),
+        }
+        # This only looks correct because the demo3 files are not
+        # restored.
+        self.assertEqual(m.mapping['demo'], d4list)
+
+        m._unload_infolist('/tmp/demo2.zip')
+        # Shouldn't be affected because they don't belong to demo2.
+        self.assertEqual(m.mapping['demo'], d4list)
+
+        # latest one is unloaded.
+        self.assertEqual(list(m.reverse_mapping['demo/']),
+                         ['/tmp/demo3.zip', '/tmp/demo4.zip'])
+        self.assertEqual(sorted(m.archives.keys()),
+                         ['/tmp/demo3.zip', '/tmp/demo4.zip'])
+        self.assertEqual(
+            sorted(m.archive_ifilenames['/tmp/demo3.zip']), [
+                'demo/', 'demo/file1', 'demo/file2', 'demo/file3',
+                'demo/file4', 'demo/file5', 'demo/file6'
+        ])
+
+        m._unload_infolist('/tmp/demo4.zip')
+        # XXX because how demo3 is marked in the way, this never
+        # triggers the removal because technically demo4 _should_
+        # not have overwrote so the reverse mapping does not show
+        # that demo4's version be removed.
+        self.assertEqual(m.mapping['demo'], d4list)
+
+        # everything still removed, at last.
+        m._unload_infolist('/tmp/demo3.zip')
+        self.assertEqual(m.mapping['demo'], {})
+
+    def test_unload_infolist_multiple_overwrite(self):
+        demo = path('demo2.zip')
+        m = DefaultMapper(overwrite=True)
+        with ZipFile(demo) as zf:
+            m._load_infolist('/tmp/demo1.zip', zf.infolist())
+            m._load_infolist('/tmp/demo2.zip', zf.infolist())
+            m._load_infolist('/tmp/demo3.zip', zf.infolist())
+
+        # Unloading the latest one.
+        m._unload_infolist('/tmp/demo3.zip')
+
+        # latest one is unloaded.
+        self.assertEqual(m.mapping, {'demo': {}})
+        self.assertEqual(list(m.reverse_mapping['demo/']),
+                         ['/tmp/demo1.zip', '/tmp/demo2.zip'])
+        self.assertEqual(sorted(m.archives.keys()),
+                         ['/tmp/demo1.zip', '/tmp/demo2.zip'])
+        self.assertEqual(
+            sorted(m.archive_ifilenames['/tmp/demo1.zip']), [
+                'demo/', 'demo/file1', 'demo/file2', 'demo/file3',
+                'demo/file4', 'demo/file5', 'demo/file6'
+        ])
+
+        with ZipFile(demo) as zf:
+            m._load_infolist('/tmp/demo4.zip', zf.infolist())
+
+        m._unload_infolist('/tmp/demo1.zip')
+
+        self.assertEqual(m.mapping['demo'], {
+            'file1': ('/tmp/demo4.zip', 'demo/file1', 33),
+            'file2': ('/tmp/demo4.zip', 'demo/file2', 33),
+            'file3': ('/tmp/demo4.zip', 'demo/file3', 33),
+            'file4': ('/tmp/demo4.zip', 'demo/file4', 33),
+            'file5': ('/tmp/demo4.zip', 'demo/file5', 33),
+            'file6': ('/tmp/demo4.zip', 'demo/file6', 33),
+        })
+
+        self.assertEqual(
+            list(m.reverse_mapping['demo/']),
+           ['/tmp/demo1.zip', '/tmp/demo2.zip', '/tmp/demo4.zip']
+        )
+
     def test_mapping_bad(self):
         bad_target = path('bad.zip')
         missing_target = path('nosuchzip.zip')
