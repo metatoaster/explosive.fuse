@@ -1,4 +1,5 @@
 import unittest
+from zipfile import ZipFile
 from os.path import dirname
 from os.path import join
 
@@ -63,6 +64,75 @@ class DefaultMapperTestCase(unittest.TestCase):
         self.assertEqual(sorted(m.readdir('')), ['1', 'notdir'])
         self.assertEqual(sorted(m.readdir('notdir')), [])
         self.assertEqual(sorted(m.readdir('nowhere')), [])
+
+    def test_load_infolist(self):
+        demo1 = path('demo1.zip')
+
+        m = DefaultMapper()
+        with ZipFile(demo1) as zf:
+            m._load_infolist('/tmp/demo1.zip', zf.infolist())
+
+        self.assertEqual(m.mapping, {
+            'file1': ('/tmp/demo1.zip', 'file1', 33),
+            'file2': ('/tmp/demo1.zip', 'file2', 33),
+            'file3': ('/tmp/demo1.zip', 'file3', 33),
+            'file4': ('/tmp/demo1.zip', 'file4', 33),
+            'file5': ('/tmp/demo1.zip', 'file5', 33),
+            'file6': ('/tmp/demo1.zip', 'file6', 33),
+        })
+
+        # archive filenames not duplicated in memory (check memory id)
+        self.assertEqual(len(m.mapping.values()), 6)
+        self.assertEqual(len(set(id(v[0]) for v in m.mapping.values())), 1)
+        self.assertIs(m.mapping['file1'][0], list(m.archives.keys())[0])
+        self.assertIs(m.mapping['file1'][0],
+            list(m.archive_ifilenames.keys())[0])
+
+        self.assertEqual(m.archive_ifilenames, {
+            '/tmp/demo1.zip': [
+                'file1', 'file2', 'file3', 'file4', 'file5', 'file6']
+        })
+
+        self.assertEqual({k: list(v) for k, v in m.reverse_mapping.items()}, {
+            'file1': ['/tmp/demo1.zip'],
+            'file2': ['/tmp/demo1.zip'],
+            'file3': ['/tmp/demo1.zip'],
+            'file4': ['/tmp/demo1.zip'],
+            'file5': ['/tmp/demo1.zip'],
+            'file6': ['/tmp/demo1.zip'],
+        })
+
+    def test_load_infolist_nested(self):
+        demo1 = path('demo2.zip')
+
+        m = DefaultMapper()
+        with ZipFile(demo1) as zf:
+            m._load_infolist('/tmp/demo2.zip', zf.infolist())
+
+        self.assertEqual(m.mapping['demo'], {
+            'file1': ('/tmp/demo2.zip', 'demo/file1', 33),
+            'file2': ('/tmp/demo2.zip', 'demo/file2', 33),
+            'file3': ('/tmp/demo2.zip', 'demo/file3', 33),
+            'file4': ('/tmp/demo2.zip', 'demo/file4', 33),
+            'file5': ('/tmp/demo2.zip', 'demo/file5', 33),
+            'file6': ('/tmp/demo2.zip', 'demo/file6', 33),
+        })
+
+        self.assertEqual(m.archive_ifilenames, {
+            '/tmp/demo2.zip': [
+                'demo/', 'demo/file4', 'demo/file3', 'demo/file5',
+                'demo/file6', 'demo/file1', 'demo/file2']
+        })
+
+        self.assertEqual({k: list(v) for k, v in m.reverse_mapping.items()}, {
+            'demo/': ['/tmp/demo2.zip'],
+            'demo/file1': ['/tmp/demo2.zip'],
+            'demo/file2': ['/tmp/demo2.zip'],
+            'demo/file3': ['/tmp/demo2.zip'],
+            'demo/file4': ['/tmp/demo2.zip'],
+            'demo/file5': ['/tmp/demo2.zip'],
+            'demo/file6': ['/tmp/demo2.zip'],
+        })
 
     def test_mapping_bad(self):
         bad_target = path('bad.zip')

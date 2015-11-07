@@ -1,3 +1,6 @@
+from time import time
+from collections import defaultdict
+from collections import deque
 from os.path import basename
 from logging import getLogger
 from zipfile import ZipFile
@@ -35,7 +38,18 @@ class DefaultMapper(object):
             self.pathmaker = _pathmaker
         else:
             self.pathmaker = getattr(pathmaker, pathmaker_name)()
+
+        # The actual filesystem mapping
         self.mapping = {}
+        # a mapping with keys of generated paths against source archive.
+        # its keys includes a map of directory to its source archive.
+        self.reverse_mapping = defaultdict(deque)
+        # Tracked file added timestamps (see _load_infolist)
+        self.archives = {}
+        # A flattened mapping of archive to its list of internal entries
+        # including directory entries.
+        self.archive_ifilenames = {}
+
         if path:
             self.load_archive(path)
 
@@ -82,7 +96,9 @@ class DefaultMapper(object):
         return current
 
     def _load_infolist(self, archive_path, infolist):
+        self.archives[archive_path] = time()
         archive_name = basename(archive_path) + '/'
+        self.archive_ifilenames[archive_path] = i_filenames = []
 
         for info in infolist:
             if self.include_arcname:
@@ -99,6 +115,9 @@ class DefaultMapper(object):
                 logger.warning(
                     '`%s` could not be created: %s', info.filename, e.args[0])
                 continue
+
+            self.reverse_mapping[ifilename].append(archive_path)
+            i_filenames.append(ifilename)
 
             if not filename:
                 # was a directory entry
