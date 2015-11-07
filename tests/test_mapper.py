@@ -1,11 +1,18 @@
 import unittest
 from zipfile import ZipFile
+from zipfile import ZipInfo
 from os.path import dirname
 from os.path import join
 
 from explosive.fuse.mapper import DefaultMapper
 
 path = lambda p: join(dirname(__file__), 'data', p)
+
+
+def zipinfo(name, size=0):
+    zi = ZipInfo(name)
+    zi.file_size = zi.compress_size = size
+    return zi
 
 
 class DefaultMapperTestCase(unittest.TestCase):
@@ -103,10 +110,10 @@ class DefaultMapperTestCase(unittest.TestCase):
         })
 
     def test_load_infolist_nested(self):
-        demo1 = path('demo2.zip')
+        demo2 = path('demo2.zip')
 
         m = DefaultMapper()
-        with ZipFile(demo1) as zf:
+        with ZipFile(demo2) as zf:
             m._load_infolist('/tmp/demo2.zip', zf.infolist())
 
         self.assertEqual(m.mapping['demo'], {
@@ -125,6 +132,125 @@ class DefaultMapperTestCase(unittest.TestCase):
         })
 
         self.assertEqual({k: list(v) for k, v in m.reverse_mapping.items()}, {
+            'demo/': ['/tmp/demo2.zip'],
+            'demo/file1': ['/tmp/demo2.zip'],
+            'demo/file2': ['/tmp/demo2.zip'],
+            'demo/file3': ['/tmp/demo2.zip'],
+            'demo/file4': ['/tmp/demo2.zip'],
+            'demo/file5': ['/tmp/demo2.zip'],
+            'demo/file6': ['/tmp/demo2.zip'],
+        })
+
+    def assertDemo3ThenDemo4(self, m, demo3, demo4):
+        self.assertEqual(list(sorted(m.mapping.keys())), ['demo', 'hello'])
+        self.assertEqual(m.mapping['hello'], (demo4, 'hello', 6))
+        self.assertEqual(m.mapping['demo'], {
+            'dir1': {
+                'file1': (demo3, 'demo/dir1/file1', 33),
+                'file2': (demo3, 'demo/dir1/file2', 33),
+                'file3': (demo3, 'demo/dir1/file3', 33),
+                'file4': (demo3, 'demo/dir1/file4', 33),
+                'file5': (demo4, 'demo/dir1/file5', 26),
+            },
+            'dir2': {
+                'file2': (demo4, 'demo/dir2/file2', 26),
+            },
+            'dir3': {
+                'dir3': {
+                    'file5': (demo3, 'demo/dir3/dir3/file5', 33),
+                },
+            },
+            'dir4': {
+                'dir5': {
+                    'dir6': {
+                        'file6': (demo3, 'demo/dir4/dir5/dir6/file6', 33),
+                        'dir7': {
+                        },
+                    },
+                },
+            },
+            'some': {
+                'path': (demo3, 'demo/some/path', 31),
+            },
+            'some_path': (demo3, 'demo/some_path', 32),
+        })
+
+    def test_load_infolist_multiple(self):
+        demo3 = path('demo3.zip')
+        demo4 = path('demo4.zip')
+
+        m = DefaultMapper()
+        with ZipFile(demo3) as zf:
+            m._load_infolist('/tmp/demo3.zip', zf.infolist())
+
+        with ZipFile(demo4) as zf:
+            m._load_infolist('/tmp/demo4.zip', zf.infolist())
+
+        self.assertEqual(m.archive_ifilenames, {
+            '/tmp/demo3.zip': [
+                'demo/', 'demo/some/', 'demo/some/path', 'demo/dir3/',
+                'demo/dir3/dir3/', 'demo/dir3/dir3/file5', 'demo/some_path',
+                'demo/dir1/', 'demo/dir1/file4', 'demo/dir1/file3',
+                'demo/dir1/file1', 'demo/dir1/file2', 'demo/dir2/',
+                'demo/dir4/', 'demo/dir4/dir5/', 'demo/dir4/dir5/dir6/',
+                'demo/dir4/dir5/dir6/file6', 'demo/dir4/dir5/dir6/dir7/'
+            ],
+            '/tmp/demo4.zip': [
+                'demo/', 'demo/dir1/', 'demo/dir1/file3', 'demo/dir1/file5',
+                'demo/dir1/file1', 'demo/dir2/', 'demo/dir2/file2', 'hello'
+            ]
+        })
+
+        self.assertEqual({k: list(v) for k, v in m.reverse_mapping.items()}, {
+            'demo/': ['/tmp/demo3.zip', '/tmp/demo4.zip'],
+            'demo/dir1/': ['/tmp/demo3.zip', '/tmp/demo4.zip'],
+            'demo/dir1/file1': ['/tmp/demo3.zip', '/tmp/demo4.zip'],
+            'demo/dir1/file2': ['/tmp/demo3.zip'],
+            'demo/dir1/file3': ['/tmp/demo3.zip', '/tmp/demo4.zip'],
+            'demo/dir1/file4': ['/tmp/demo3.zip'],
+            'demo/dir1/file5': ['/tmp/demo4.zip'],
+            'demo/dir2/': ['/tmp/demo3.zip', '/tmp/demo4.zip'],
+            'demo/dir2/file2': ['/tmp/demo4.zip'],
+            'demo/dir3/': ['/tmp/demo3.zip'],
+            'demo/dir3/dir3/': ['/tmp/demo3.zip'],
+            'demo/dir3/dir3/file5': ['/tmp/demo3.zip'],
+            'demo/dir4/': ['/tmp/demo3.zip'],
+            'demo/dir4/dir5/': ['/tmp/demo3.zip'],
+            'demo/dir4/dir5/dir6/': ['/tmp/demo3.zip'],
+            'demo/dir4/dir5/dir6/dir7/': ['/tmp/demo3.zip'],
+            'demo/dir4/dir5/dir6/file6': ['/tmp/demo3.zip'],
+            'demo/some/': ['/tmp/demo3.zip'],
+            'demo/some/path': ['/tmp/demo3.zip'],
+            'demo/some_path': ['/tmp/demo3.zip'],
+            'hello': ['/tmp/demo4.zip'],
+        })
+
+        # test contents of m.mapping with the helper
+        self.assertDemo3ThenDemo4(m, '/tmp/demo3.zip', '/tmp/demo4.zip')
+
+    def test_load_infolist_dirfile_conflict(self):
+        m = DefaultMapper()
+        m._load_infolist('/tmp/conflict.zip', [zipinfo('demo')])
+        demo2 = path('demo2.zip')
+        with ZipFile(demo2) as zf:
+            m._load_infolist('/tmp/demo2.zip', zf.infolist())
+
+        self.assertEqual(m.mapping, {
+            'demo': ('/tmp/conflict.zip', 'demo', 0),
+        })
+
+        self.assertEqual(m.archive_ifilenames, {
+            '/tmp/conflict.zip': [
+                'demo',
+            ],
+            '/tmp/demo2.zip': [
+                'demo/', 'demo/file4', 'demo/file3', 'demo/file5',
+                'demo/file6', 'demo/file1', 'demo/file2',
+            ]
+        })
+
+        self.assertEqual({k: list(v) for k, v in m.reverse_mapping.items()}, {
+            'demo': ['/tmp/conflict.zip'],
             'demo/': ['/tmp/demo2.zip'],
             'demo/file1': ['/tmp/demo2.zip'],
             'demo/file2': ['/tmp/demo2.zip'],
@@ -224,38 +350,8 @@ class DefaultMapperTestCase(unittest.TestCase):
         # load order matters, new entries will not overwrite old ones.
         m.load_archive(demo3)
         m.load_archive(demo4)
-        self.assertEqual(list(sorted(m.mapping.keys())), ['demo', 'hello'])
-        self.assertEqual(m.mapping['hello'], (demo4, 'hello', 6))
-        self.assertEqual(m.mapping['demo'], {
-            'dir1': {
-                'file1': (demo3, 'demo/dir1/file1', 33),
-                'file2': (demo3, 'demo/dir1/file2', 33),
-                'file3': (demo3, 'demo/dir1/file3', 33),
-                'file4': (demo3, 'demo/dir1/file4', 33),
-                'file5': (demo4, 'demo/dir1/file5', 26),
-            },
-            'dir2': {
-                'file2': (demo4, 'demo/dir2/file2', 26),
-            },
-            'dir3': {
-                'dir3': {
-                    'file5': (demo3, 'demo/dir3/dir3/file5', 33),
-                },
-            },
-            'dir4': {
-                'dir5': {
-                    'dir6': {
-                        'file6': (demo3, 'demo/dir4/dir5/dir6/file6', 33),
-                        'dir7': {
-                        },
-                    },
-                },
-            },
-            'some': {
-                'path': (demo3, 'demo/some/path', 31),
-            },
-            'some_path': (demo3, 'demo/some_path', 32),
-        })
+
+        self.assertDemo3ThenDemo4(m, demo3, demo4)
 
         self.assertEqual(
             m.traverse('demo/dir1/file1'), (demo3, 'demo/dir1/file1', 33))

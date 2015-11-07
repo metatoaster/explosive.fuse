@@ -106,6 +106,15 @@ class DefaultMapper(object):
             else:
                 ifilename = info.filename
             frags, filename = self.pathmaker(ifilename)
+
+            # These may appear redundant compared to the ones below, but
+            # do note these are always added despite conflict that will
+            # appear at the filesystem presentation level.  This is used
+            # for locating current zip files for regeneration if an
+            # archive was removed from this mapping.
+            self.reverse_mapping[ifilename].append(archive_path)
+            i_filenames.append(ifilename)
+
             try:
                 target = self.mkdir(frags)
             except ValueError as e:
@@ -115,9 +124,6 @@ class DefaultMapper(object):
                 logger.warning(
                     '`%s` could not be created: %s', info.filename, e.args[0])
                 continue
-
-            self.reverse_mapping[ifilename].append(archive_path)
-            i_filenames.append(ifilename)
 
             if not filename:
                 # was a directory entry
