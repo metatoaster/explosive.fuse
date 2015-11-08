@@ -101,12 +101,12 @@ class DefaultMapperTestCase(unittest.TestCase):
         })
 
         self.assertEqual({k: list(v) for k, v in m.reverse_mapping.items()}, {
-            'file1': ['/tmp/demo1.zip'],
-            'file2': ['/tmp/demo1.zip'],
-            'file3': ['/tmp/demo1.zip'],
-            'file4': ['/tmp/demo1.zip'],
-            'file5': ['/tmp/demo1.zip'],
-            'file6': ['/tmp/demo1.zip'],
+            'file1': [('/tmp/demo1.zip', 'file1', 33)],
+            'file2': [('/tmp/demo1.zip', 'file2', 33)],
+            'file3': [('/tmp/demo1.zip', 'file3', 33)],
+            'file4': [('/tmp/demo1.zip', 'file4', 33)],
+            'file5': [('/tmp/demo1.zip', 'file5', 33)],
+            'file6': [('/tmp/demo1.zip', 'file6', 33)],
         })
 
     def test_load_infolist_nested(self):
@@ -132,13 +132,13 @@ class DefaultMapperTestCase(unittest.TestCase):
         })
 
         self.assertEqual({k: list(v) for k, v in m.reverse_mapping.items()}, {
-            'demo/': ['/tmp/demo2.zip'],
-            'demo/file1': ['/tmp/demo2.zip'],
-            'demo/file2': ['/tmp/demo2.zip'],
-            'demo/file3': ['/tmp/demo2.zip'],
-            'demo/file4': ['/tmp/demo2.zip'],
-            'demo/file5': ['/tmp/demo2.zip'],
-            'demo/file6': ['/tmp/demo2.zip'],
+            'demo/': [('/tmp/demo2.zip', 'demo/', 0)],
+            'demo/file1': [('/tmp/demo2.zip', 'demo/file1', 33)],
+            'demo/file2': [('/tmp/demo2.zip', 'demo/file2', 33)],
+            'demo/file3': [('/tmp/demo2.zip', 'demo/file3', 33)],
+            'demo/file4': [('/tmp/demo2.zip', 'demo/file4', 33)],
+            'demo/file5': [('/tmp/demo2.zip', 'demo/file5', 33)],
+            'demo/file6': [('/tmp/demo2.zip', 'demo/file6', 33)],
         })
 
     def assertDemo3ThenDemo4(self, m, demo3, demo4):
@@ -202,27 +202,75 @@ class DefaultMapperTestCase(unittest.TestCase):
         })
 
         self.assertEqual({k: list(v) for k, v in m.reverse_mapping.items()}, {
-            'demo/': ['/tmp/demo3.zip', '/tmp/demo4.zip'],
-            'demo/dir1/': ['/tmp/demo3.zip', '/tmp/demo4.zip'],
-            'demo/dir1/file1': ['/tmp/demo3.zip', '/tmp/demo4.zip'],
-            'demo/dir1/file2': ['/tmp/demo3.zip'],
-            'demo/dir1/file3': ['/tmp/demo3.zip', '/tmp/demo4.zip'],
-            'demo/dir1/file4': ['/tmp/demo3.zip'],
-            'demo/dir1/file5': ['/tmp/demo4.zip'],
-            'demo/dir2/': ['/tmp/demo3.zip', '/tmp/demo4.zip'],
-            'demo/dir2/file2': ['/tmp/demo4.zip'],
-            'demo/dir3/': ['/tmp/demo3.zip'],
-            'demo/dir3/dir3/': ['/tmp/demo3.zip'],
-            'demo/dir3/dir3/file5': ['/tmp/demo3.zip'],
-            'demo/dir4/': ['/tmp/demo3.zip'],
-            'demo/dir4/dir5/': ['/tmp/demo3.zip'],
-            'demo/dir4/dir5/dir6/': ['/tmp/demo3.zip'],
-            'demo/dir4/dir5/dir6/dir7/': ['/tmp/demo3.zip'],
-            'demo/dir4/dir5/dir6/file6': ['/tmp/demo3.zip'],
-            'demo/some/': ['/tmp/demo3.zip'],
-            'demo/some/path': ['/tmp/demo3.zip'],
-            'demo/some_path': ['/tmp/demo3.zip'],
-            'hello': ['/tmp/demo4.zip'],
+            'demo/': [
+                ('/tmp/demo3.zip', 'demo/', 0),
+                ('/tmp/demo4.zip', 'demo/', 0),
+            ],
+            'demo/dir1/': [
+                ('/tmp/demo3.zip', 'demo/dir1/', 0),
+                ('/tmp/demo4.zip', 'demo/dir1/', 0),
+            ],
+            'demo/dir1/file1': [
+                ('/tmp/demo3.zip', 'demo/dir1/file1', 33),
+                ('/tmp/demo4.zip', 'demo/dir1/file1', 26),
+            ],
+            'demo/dir1/file2': [
+                ('/tmp/demo3.zip', 'demo/dir1/file2', 33),
+            ],
+            'demo/dir1/file3': [
+                ('/tmp/demo3.zip', 'demo/dir1/file3', 33),
+                ('/tmp/demo4.zip', 'demo/dir1/file3', 26),
+            ],
+            'demo/dir1/file4': [
+                ('/tmp/demo3.zip', 'demo/dir1/file4', 33),
+            ],
+            'demo/dir1/file5': [
+                ('/tmp/demo4.zip', 'demo/dir1/file5', 26),
+            ],
+            'demo/dir2/': [
+                ('/tmp/demo3.zip', 'demo/dir2/', 0),
+                ('/tmp/demo4.zip', 'demo/dir2/', 0),
+            ],
+            'demo/dir2/file2': [
+                ('/tmp/demo4.zip', 'demo/dir2/file2', 26),
+            ],
+            'demo/dir3/': [
+                ('/tmp/demo3.zip', 'demo/dir3/', 0),
+            ],
+            'demo/dir3/dir3/': [
+                ('/tmp/demo3.zip', 'demo/dir3/dir3/', 0),
+            ],
+            'demo/dir3/dir3/file5': [
+                ('/tmp/demo3.zip', 'demo/dir3/dir3/file5', 33),
+            ],
+            'demo/dir4/': [
+                ('/tmp/demo3.zip', 'demo/dir4/', 0),
+            ],
+            'demo/dir4/dir5/': [
+                ('/tmp/demo3.zip', 'demo/dir4/dir5/', 0),
+            ],
+            'demo/dir4/dir5/dir6/': [
+                ('/tmp/demo3.zip', 'demo/dir4/dir5/dir6/', 0),
+            ],
+            'demo/dir4/dir5/dir6/dir7/': [
+                ('/tmp/demo3.zip', 'demo/dir4/dir5/dir6/dir7/', 0),
+            ],
+            'demo/dir4/dir5/dir6/file6': [
+                ('/tmp/demo3.zip', 'demo/dir4/dir5/dir6/file6', 33),
+            ],
+            'demo/some/': [
+                ('/tmp/demo3.zip', 'demo/some/', 0),
+            ],
+            'demo/some/path': [
+                ('/tmp/demo3.zip', 'demo/some/path', 31),
+            ],
+            'demo/some_path': [
+                ('/tmp/demo3.zip', 'demo/some_path', 32),
+            ],
+            'hello': [
+                ('/tmp/demo4.zip', 'hello', 6),
+            ],
+
         })
 
         # test contents of m.mapping with the helper
@@ -250,14 +298,14 @@ class DefaultMapperTestCase(unittest.TestCase):
         })
 
         self.assertEqual({k: list(v) for k, v in m.reverse_mapping.items()}, {
-            'demo': ['/tmp/conflict.zip'],
-            'demo/': ['/tmp/demo2.zip'],
-            'demo/file1': ['/tmp/demo2.zip'],
-            'demo/file2': ['/tmp/demo2.zip'],
-            'demo/file3': ['/tmp/demo2.zip'],
-            'demo/file4': ['/tmp/demo2.zip'],
-            'demo/file5': ['/tmp/demo2.zip'],
-            'demo/file6': ['/tmp/demo2.zip'],
+            'demo': [('/tmp/conflict.zip', 'demo', 0)],
+            'demo/': [('/tmp/demo2.zip', 'demo/', 0)],
+            'demo/file1': [('/tmp/demo2.zip', 'demo/file1', 33)],
+            'demo/file2': [('/tmp/demo2.zip', 'demo/file2', 33)],
+            'demo/file3': [('/tmp/demo2.zip', 'demo/file3', 33)],
+            'demo/file4': [('/tmp/demo2.zip', 'demo/file4', 33)],
+            'demo/file5': [('/tmp/demo2.zip', 'demo/file5', 33)],
+            'demo/file6': [('/tmp/demo2.zip', 'demo/file6', 33)],
         })
 
     def test_unload_infolist_simple(self):
@@ -285,7 +333,7 @@ class DefaultMapperTestCase(unittest.TestCase):
             m._load_infolist('/tmp/demo3.zip', zf.infolist())
 
         self.assertEqual(
-            list(m.reverse_mapping['demo/']),
+            list(f[0] for f in m.reverse_mapping['demo/']),
             ['/tmp/demo1.zip', '/tmp/demo2.zip', '/tmp/demo3.zip']
         )
 
@@ -313,17 +361,19 @@ class DefaultMapperTestCase(unittest.TestCase):
             m._unload_infolist('/tmp/demo2.zip')
 
         m._unload_infolist('/tmp/demo1.zip')
-        # TODO update this if we figure out how to restore the entries
-        # for this.  May need to use the actual path if we need to get
-        # the code to read the archives again.  Maybe collate the list
-        # of these conflicts and pass to a loader that will only parse
-        # the affected archives and only add paths back to the mapping
-        # iff the filename in the info generates the same ifilepath to
-        # be added.
-        # Might just be easier to leave a control file and regenerate
-        # whenever a user touches it.
-        self.assertEqual(m.mapping, {'demo': {}})
-        self.assertEqual(list(m.reverse_mapping['demo/']), ['/tmp/demo3.zip'])
+        self.assertEqual(m.mapping, {'demo': {
+            'file1': ('/tmp/demo3.zip', 'demo/file1', 33),
+            'file2': ('/tmp/demo3.zip', 'demo/file2', 33),
+            'file3': ('/tmp/demo3.zip', 'demo/file3', 33),
+            'file4': ('/tmp/demo3.zip', 'demo/file4', 33),
+            'file5': ('/tmp/demo3.zip', 'demo/file5', 33),
+            'file6': ('/tmp/demo3.zip', 'demo/file6', 33),
+        }})
+
+        self.assertEqual(
+            list(m.reverse_mapping['demo/']),
+            [('/tmp/demo3.zip', 'demo/', 0)],
+        )
         self.assertEqual(sorted(m.archives.keys()), ['/tmp/demo3.zip'])
         self.assertEqual(
             sorted(m.archive_ifilenames['/tmp/demo3.zip']), [
@@ -353,29 +403,31 @@ class DefaultMapperTestCase(unittest.TestCase):
             m._load_infolist('/tmp/demo3.zip', zf.infolist())
 
         m._unload_infolist('/tmp/demo1.zip')
-        self.assertEqual(m.mapping, {'demo': {}})
+        d2list = {
+            'file1': ('/tmp/demo2.zip', 'demo/file1', 33),
+            'file2': ('/tmp/demo2.zip', 'demo/file2', 33),
+            'file3': ('/tmp/demo2.zip', 'demo/file3', 33),
+            'file4': ('/tmp/demo2.zip', 'demo/file4', 33),
+            'file5': ('/tmp/demo2.zip', 'demo/file5', 33),
+            'file6': ('/tmp/demo2.zip', 'demo/file6', 33),
+        }
+        self.assertEqual(m.mapping, {'demo': d2list})
 
         with ZipFile(demo) as zf:
             m._load_infolist('/tmp/demo4.zip', zf.infolist())
 
-        d4list = {
-            'file1': ('/tmp/demo4.zip', 'demo/file1', 33),
-            'file2': ('/tmp/demo4.zip', 'demo/file2', 33),
-            'file3': ('/tmp/demo4.zip', 'demo/file3', 33),
-            'file4': ('/tmp/demo4.zip', 'demo/file4', 33),
-            'file5': ('/tmp/demo4.zip', 'demo/file5', 33),
-            'file6': ('/tmp/demo4.zip', 'demo/file6', 33),
-        }
-        # This only looks correct because the demo3 files are not
-        # restored.
-        self.assertEqual(m.mapping['demo'], d4list)
+        # Shouldn't overwrite now.
+        self.assertEqual(m.mapping['demo'], d2list)
 
         m._unload_infolist('/tmp/demo2.zip')
+
         # Shouldn't be affected because they don't belong to demo2.
-        self.assertEqual(m.mapping['demo'], d4list)
+        self.assertEqual(m.mapping['demo'], {
+            k: ('/tmp/demo3.zip', v[1], v[2]) for k, v in d2list.items()
+        })
 
         # latest one is unloaded.
-        self.assertEqual(list(m.reverse_mapping['demo/']),
+        self.assertEqual(list(v[0] for v in m.reverse_mapping['demo/']),
                          ['/tmp/demo3.zip', '/tmp/demo4.zip'])
         self.assertEqual(sorted(m.archives.keys()),
                          ['/tmp/demo3.zip', '/tmp/demo4.zip'])
@@ -386,11 +438,9 @@ class DefaultMapperTestCase(unittest.TestCase):
         ])
 
         m._unload_infolist('/tmp/demo4.zip')
-        # XXX because how demo3 is marked in the way, this never
-        # triggers the removal because technically demo4 _should_
-        # not have overwrote so the reverse mapping does not show
-        # that demo4's version be removed.
-        self.assertEqual(m.mapping['demo'], d4list)
+        self.assertEqual(m.mapping['demo'], {
+            k: ('/tmp/demo3.zip', v[1], v[2]) for k, v in d2list.items()
+        })
 
         # everything still removed, at last.
         m._unload_infolist('/tmp/demo3.zip')
@@ -404,12 +454,25 @@ class DefaultMapperTestCase(unittest.TestCase):
             m._load_infolist('/tmp/demo2.zip', zf.infolist())
             m._load_infolist('/tmp/demo3.zip', zf.infolist())
 
+        d3list = {
+            'file1': ('/tmp/demo3.zip', 'demo/file1', 33),
+            'file2': ('/tmp/demo3.zip', 'demo/file2', 33),
+            'file3': ('/tmp/demo3.zip', 'demo/file3', 33),
+            'file4': ('/tmp/demo3.zip', 'demo/file4', 33),
+            'file5': ('/tmp/demo3.zip', 'demo/file5', 33),
+            'file6': ('/tmp/demo3.zip', 'demo/file6', 33),
+        }
+
+        self.assertEqual(m.mapping, {'demo': d3list})
+
         # Unloading the latest one.
         m._unload_infolist('/tmp/demo3.zip')
 
-        # latest one is unloaded.
-        self.assertEqual(m.mapping, {'demo': {}})
-        self.assertEqual(list(m.reverse_mapping['demo/']),
+        self.assertEqual(m.mapping['demo'], {
+            k: ('/tmp/demo2.zip', v[1], v[2]) for k, v in d3list.items()
+        })
+
+        self.assertEqual(list(f[0] for f in m.reverse_mapping['demo/']),
                          ['/tmp/demo1.zip', '/tmp/demo2.zip'])
         self.assertEqual(sorted(m.archives.keys()),
                          ['/tmp/demo1.zip', '/tmp/demo2.zip'])
@@ -423,20 +486,29 @@ class DefaultMapperTestCase(unittest.TestCase):
             m._load_infolist('/tmp/demo4.zip', zf.infolist())
 
         m._unload_infolist('/tmp/demo1.zip')
-
         self.assertEqual(m.mapping['demo'], {
-            'file1': ('/tmp/demo4.zip', 'demo/file1', 33),
-            'file2': ('/tmp/demo4.zip', 'demo/file2', 33),
-            'file3': ('/tmp/demo4.zip', 'demo/file3', 33),
-            'file4': ('/tmp/demo4.zip', 'demo/file4', 33),
-            'file5': ('/tmp/demo4.zip', 'demo/file5', 33),
-            'file6': ('/tmp/demo4.zip', 'demo/file6', 33),
+            k: ('/tmp/demo4.zip', v[1], v[2]) for k, v in d3list.items()
         })
-
         self.assertEqual(
-            list(m.reverse_mapping['demo/']),
+            list(f[0] for f in m.reverse_mapping['demo/']),
            ['/tmp/demo1.zip', '/tmp/demo2.zip', '/tmp/demo4.zip']
         )
+
+        m._unload_infolist('/tmp/demo2.zip')
+        self.assertEqual(m.mapping['demo'], {
+            k: ('/tmp/demo4.zip', v[1], v[2]) for k, v in d3list.items()
+        })
+        self.assertEqual(
+            list(f[0] for f in m.reverse_mapping['demo/']),
+           ['/tmp/demo1.zip', '/tmp/demo2.zip', '/tmp/demo4.zip']
+        )
+
+        # Finally everything that can be cleaned, cleaned.
+        m._unload_infolist('/tmp/demo4.zip')
+        self.assertEqual(m.mapping['demo'], {})
+        self.assertEqual(m.reverse_mapping, {})
+        self.assertEqual(m.archives, {})
+        self.assertEqual(m.archive_ifilenames, {})
 
     def test_mapping_bad(self):
         bad_target = path('bad.zip')
