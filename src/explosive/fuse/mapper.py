@@ -114,7 +114,9 @@ class DefaultMapper(object):
             else:
                 raw_filename = info.filename
             frags, filename = self.pathmaker(raw_filename)
-            # ifilename should be this, internal filename.
+
+            # the internal filename.
+            ifilename = '/'.join([] + frags + [filename])
 
             fentry = FileEntry(archive_path, info.filename, info.file_size)
 
@@ -123,8 +125,8 @@ class DefaultMapper(object):
             # appear at the filesystem presentation level.  This is used
             # for locating current zip files for regeneration if an
             # archive was removed from this mapping.
-            self.reverse_mapping[raw_filename].append(fentry)
-            i_filenames.append(raw_filename)
+            self.reverse_mapping[ifilename].append(fentry)
+            i_filenames.append(ifilename)
 
             try:
                 target = self.mkdir(frags)
@@ -188,8 +190,12 @@ class DefaultMapper(object):
                 # This no longer exists in any active archive.
                 self.reverse_mapping.pop(ifilename)
 
-            # Remove from self.mapping.
-            frags, filename = self.pathmaker(ifilename)
+            # We have an ifilename created in _load_infolist, invert
+            # operation to derive filename and frags.
+            raw = ifilename.split('/')
+            filename = raw[-1]
+            frags = raw[:-1]
+
             info = self._traverse(frags)
             if not info is None:
                 # The file's directory may not have been added to

@@ -141,6 +141,64 @@ class DefaultMapperTestCase(unittest.TestCase):
             'demo/file6': [('/tmp/demo2.zip', 'demo/file6', 33)],
         })
 
+    def test_load_infolist_alternative_pathmaking(self):
+        demo1 = path('demo1.zip')
+        demo2 = path('demo2.zip')
+
+        m = DefaultMapper(pathmaker_name='flatten', include_arcname=True)
+        with ZipFile(demo1) as zf:
+            # loading as demo_demo to conflict with below
+            m._load_infolist('/tmp/demo_demo', zf.infolist())
+
+        with ZipFile(demo2) as zf:
+            m._load_infolist('/tmp/demo', zf.infolist())
+
+        self.assertEqual({k: list(v) for k, v in m.reverse_mapping.items()}, {
+            '': [('/tmp/demo', 'demo/', 0)],
+            'demo_demo_file1': [('/tmp/demo_demo', 'file1', 33),
+                                ('/tmp/demo', 'demo/file1', 33)],
+            'demo_demo_file2': [('/tmp/demo_demo', 'file2', 33),
+                                ('/tmp/demo', 'demo/file2', 33)],
+            'demo_demo_file3': [('/tmp/demo_demo', 'file3', 33),
+                                ('/tmp/demo', 'demo/file3', 33)],
+            'demo_demo_file4': [('/tmp/demo_demo', 'file4', 33),
+                                ('/tmp/demo', 'demo/file4', 33)],
+            'demo_demo_file5': [('/tmp/demo_demo', 'file5', 33),
+                                ('/tmp/demo', 'demo/file5', 33)],
+            'demo_demo_file6': [('/tmp/demo_demo', 'file6', 33),
+                                ('/tmp/demo', 'demo/file6', 33)],
+        })
+
+        self.assertEqual(m.mapping, {
+            'demo_demo_file1': ('/tmp/demo_demo', 'file1', 33),
+            'demo_demo_file2': ('/tmp/demo_demo', 'file2', 33),
+            'demo_demo_file3': ('/tmp/demo_demo', 'file3', 33),
+            'demo_demo_file4': ('/tmp/demo_demo', 'file4', 33),
+            'demo_demo_file5': ('/tmp/demo_demo', 'file5', 33),
+            'demo_demo_file6': ('/tmp/demo_demo', 'file6', 33),
+        })
+
+        m._unload_infolist('/tmp/demo_demo')
+
+        self.assertEqual({k: list(v) for k, v in m.reverse_mapping.items()}, {
+            '': [('/tmp/demo', 'demo/', 0)],
+            'demo_demo_file1': [('/tmp/demo', 'demo/file1', 33)],
+            'demo_demo_file2': [('/tmp/demo', 'demo/file2', 33)],
+            'demo_demo_file3': [('/tmp/demo', 'demo/file3', 33)],
+            'demo_demo_file4': [('/tmp/demo', 'demo/file4', 33)],
+            'demo_demo_file5': [('/tmp/demo', 'demo/file5', 33)],
+            'demo_demo_file6': [('/tmp/demo', 'demo/file6', 33)],
+        })
+
+        self.assertEqual(m.mapping, {
+            'demo_demo_file1': ('/tmp/demo', 'demo/file1', 33),
+            'demo_demo_file2': ('/tmp/demo', 'demo/file2', 33),
+            'demo_demo_file3': ('/tmp/demo', 'demo/file3', 33),
+            'demo_demo_file4': ('/tmp/demo', 'demo/file4', 33),
+            'demo_demo_file5': ('/tmp/demo', 'demo/file5', 33),
+            'demo_demo_file6': ('/tmp/demo', 'demo/file6', 33),
+        })
+
     def assertDemo3ThenDemo4(self, m, demo3, demo4):
         self.assertEqual(list(sorted(m.mapping.keys())), ['demo', 'hello'])
         self.assertEqual(m.mapping['hello'], (demo4, 'hello', 6))
