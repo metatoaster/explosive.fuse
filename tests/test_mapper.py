@@ -568,6 +568,36 @@ class DefaultMapperTestCase(unittest.TestCase):
         self.assertEqual(m.archives, {})
         self.assertEqual(m.archive_ifilenames, {})
 
+    def test_unload_infolist_dir_file_conflict(self):
+        m = DefaultMapper()
+        m._load_infolist('/tmp/demo1.zip', [zipinfo('demo/')])
+        m._load_infolist('/tmp/demo2.zip', [zipinfo('demo')])
+        self.assertEqual(m.mapping, {'demo': {}})
+        m._unload_infolist('/tmp/demo2.zip')
+        self.assertEqual(m.mapping, {'demo': {}})
+
+    def test_unload_infolist_file_dir_conflict(self):
+        m = DefaultMapper()
+        m._load_infolist('/tmp/demo1.zip', [zipinfo('demo')])
+        m._load_infolist('/tmp/demo2.zip', [zipinfo('demo/')])
+        self.assertEqual(m.mapping, {'demo': ('/tmp/demo1.zip', 'demo', 0)})
+        m._unload_infolist('/tmp/demo1.zip')
+        # directory not created.
+        self.assertEqual(m.mapping, {})
+
+    def test_unload_infolist_file_dir_dir_conflict(self):
+        m = DefaultMapper()
+        m._load_infolist('/tmp/demo1.zip', [zipinfo('demo')])
+        m._load_infolist('/tmp/demo2.zip', [zipinfo('demo/')])
+        m._load_infolist('/tmp/demo3.zip', [zipinfo('demo/demo.txt', 1)])
+        self.assertEqual(m.mapping, {'demo': ('/tmp/demo1.zip', 'demo', 0)})
+        m._unload_infolist('/tmp/demo1.zip')
+        # directory not created.  Alternative implementation could have
+        # added the same entry to a shadow location so it would show up
+        # here, hide it again when inactive.
+        self.assertEqual(m.mapping, {})
+        m._unload_infolist('/tmp/demo3.zip')
+
     def test_mapping_bad(self):
         bad_target = path('bad.zip')
         missing_target = path('nosuchzip.zip')

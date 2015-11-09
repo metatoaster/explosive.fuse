@@ -174,6 +174,8 @@ class DefaultMapper(object):
                 # leave the reverse mapping in place.
                 continue
 
+            original_filename = fentries[index].ifilename
+
             archive_ifilenames = self.archive_ifilenames
             # We have a match, time to clean up to the latest fresh and
             # active entry that other previous calls to this function
@@ -203,7 +205,12 @@ class DefaultMapper(object):
                 # by another file.
                 if filename in info:
                     # Only remove, for the same reason as above.
-                    info.pop(filename)
+                    if (original_filename.endswith('/') ==
+                            isinstance(info[filename], dict)):
+                        # Only if the types are the same type should
+                        # this entry be removed (file for file, dir for
+                        # dir).
+                        info.pop(filename)
 
                     if fentry_replacement:
                         # Restore the fileentry with the replacement
