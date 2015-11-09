@@ -17,6 +17,7 @@ from . import pathmaker
 logger = getLogger(__name__)
 
 
+# XXX the i prefix here means archive internal, not for mapper.
 FileEntry = namedtuple(
     'FileEntry', ['archive_path', 'ifilename', 'ifile_size'])
 
