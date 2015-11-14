@@ -442,11 +442,7 @@ class DefaultMapperTestCase(unittest.TestCase):
         # finally, unload the final one.
         m._unload_infolist('/tmp/demo3.zip')
 
-        # XXX note that directories cannot be removed due to how they
-        # are stored, and how the order may result them to be checked
-        # for removal first before all the files in that directory for
-        # the archive are removed.
-        self.assertEqual(m.mapping, {'demo': {}})
+        self.assertEqual(m.mapping, {})
         self.assertEqual(m.reverse_mapping, {})
         self.assertEqual(m.archives, {})
         self.assertEqual(m.archive_ifilenames, {})
@@ -502,7 +498,7 @@ class DefaultMapperTestCase(unittest.TestCase):
 
         # everything still removed, at last.
         m._unload_infolist('/tmp/demo3.zip')
-        self.assertEqual(m.mapping['demo'], {})
+        self.assertEqual(m.mapping, {})
 
     def test_unload_infolist_multiple_overwrite(self):
         demo = path('demo2.zip')
@@ -563,7 +559,7 @@ class DefaultMapperTestCase(unittest.TestCase):
 
         # Finally everything that can be cleaned, cleaned.
         m._unload_infolist('/tmp/demo4.zip')
-        self.assertEqual(m.mapping['demo'], {})
+        self.assertEqual(m.mapping, {})
         self.assertEqual(m.reverse_mapping, {})
         self.assertEqual(m.archives, {})
         self.assertEqual(m.archive_ifilenames, {})
@@ -597,6 +593,28 @@ class DefaultMapperTestCase(unittest.TestCase):
         # here, hide it again when inactive.
         self.assertEqual(m.mapping, {})
         m._unload_infolist('/tmp/demo3.zip')
+        self.assertEqual(m.mapping, {})
+
+    def test_unload_infolist_dir_unloading(self):
+        m = DefaultMapper()
+        m._load_infolist('/tmp/demo1.zip', [zipinfo('demo/demo/1.txt', 1)])
+        m._load_infolist('/tmp/demo2.zip', [zipinfo('demo/')])
+        m._load_infolist('/tmp/demo3.zip', [zipinfo('demo')])
+        m._load_infolist('/tmp/demo4.zip', [zipinfo('demo/demo4.txt', 1)])
+        self.assertEqual(m.mapping, {'demo': {
+            'demo': {'1.txt': ('/tmp/demo1.zip', 'demo/demo/1.txt', 1)},
+            'demo4.txt': ('/tmp/demo4.zip', 'demo/demo4.txt', 1),
+        }})
+        m._unload_infolist('/tmp/demo1.zip')
+        self.assertEqual(m.mapping, {'demo': {
+            'demo4.txt': ('/tmp/demo4.zip', 'demo/demo4.txt', 1),
+        }})
+
+        m._load_infolist('/tmp/demo1.zip', [zipinfo('demo/demo/1.txt', 1)])
+        m._unload_infolist('/tmp/demo4.zip')
+        self.assertEqual(m.mapping, {'demo': {
+            'demo': {'1.txt': ('/tmp/demo1.zip', 'demo/demo/1.txt', 1)},
+        }})
 
     def test_mapping_bad(self):
         bad_target = path('bad.zip')

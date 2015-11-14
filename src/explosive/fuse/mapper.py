@@ -166,6 +166,7 @@ class DefaultMapper(object):
         # pop this out right away to mark this as to be pruned off.
         ifilenames = self.archive_ifilenames.pop(archive_path)
         index, pop = self._unload_functions()
+        all_frags = set()
         for ifilename in ifilenames:
             # lookup via the reverse mapping to see that this ifilename
             # is the active check that the current active
@@ -199,6 +200,9 @@ class DefaultMapper(object):
             filename = raw[-1]
             frags = raw[:-1]
 
+            if frags:
+                all_frags.add(tuple(frags))
+
             info = self._traverse(frags)
             if not info is None:
                 # The file's directory may not have been added to
@@ -227,7 +231,14 @@ class DefaultMapper(object):
             # will need more thought to do, given that files and dirs
             # are two different types.
 
-        # discard the date tracking.
+        # finally, purge all empty directories.  Yes this includes
+        # directories that may not be wholly owned by this archive.
+        for frags in sorted(all_frags, key=lambda x: len(x)):
+            target = self._traverse(frags[:-1])
+            if target.get(frags[-1]) == {}:
+                target.pop(frags[-1])
+
+        # discard the date associated with this archive path too.
         self.archives.pop(archive_path)
 
     def load_archive(self, archive_path):
