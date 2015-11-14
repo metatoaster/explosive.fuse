@@ -262,12 +262,37 @@ class DefaultMapper(object):
             logger.exception('Exception')
         return False
 
+    def open(self, path):
+        info = self.traverse(path)
+        if info is None:
+            return
+        archive_path, filename, _ = info
+        # it is possible to return those values, but given that the
+        # underlying files can change, or that new stack comes in, it's
+        # best not to directly expose this.
+        try:
+            with ZipFile(archive_path) as zf:
+                # zf does remain open because of this.
+                return (id(info), zf.open(filename))
+        except BadZipFile:  # pragma: no cover
+            logger.warning(
+                '`%s` became an invalid archive file', archive_path)
+        except FileNotFoundError:  # pragma: no cover
+            # shoud unload the archive?
+            logger.warning(
+                '`%s` no longer exists.', archive_path)
+        except:  # pragma: no cover
+            logger.exception('Exception')
+        return False
+
     def readfile(self, path):
         """
         Return the complete file with information contained in path.
         """
 
-        # TODO: alternative implementation return zipinfo.open handler
+        # This is an alternative implementation that returns the entire
+        # contents.  Should include similar exception handling as above,
+        # but that pattern should really be generalized.
 
         info = self.traverse(path)
 

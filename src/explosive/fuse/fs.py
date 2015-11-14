@@ -5,6 +5,7 @@ from os.path import basename
 from os import getcwd
 
 from errno import ENOENT
+from errno import EIO
 from errno import EPERM
 from stat import S_IFDIR
 from stat import S_IFLNK
@@ -52,11 +53,10 @@ class ExplosiveFUSE(LoggingMixIn, Operations):
     by the Operations class).
     """
 
-    def __init__(self, archive_paths, pathmaker_name='default', _pathmaker=None,
-            overwrite=False, include_arcname=False):
+    def __init__(self, archive_paths, pathmaker_name='default',
+            _pathmaker=None, overwrite=False, include_arcname=False):
         # if include_arcname is not defined, define it based whether
         # there is a single or multiple archives.
-        self.fd = 0
         self.mapping = DefaultMapper(
             pathmaker_name=pathmaker_name,
             _pathmaker=_pathmaker,
@@ -66,6 +66,8 @@ class ExplosiveFUSE(LoggingMixIn, Operations):
         loaded = sum(self.mapping.load_archive(abspath(p))
                      for p in archive_paths)
         logger.info('loaded %d archive(s).', loaded)
+
+        self.open_entries = {}
 
     def getattr(self, path, fh=None):
         key = path[1:]
@@ -81,22 +83,60 @@ class ExplosiveFUSE(LoggingMixIn, Operations):
         result.update(file_record)
         return result
 
+    def _mapping_open(self, key):
+        idfe_fp = self.mapping.open(key)
+        if not idfe_fp:
+            # should this errno instead be transport error? io error?
+            raise FuseOSError(ENOENT)
+        return idfe_fp
+
     def open(self, path, flags):
         # TODO implement memory usage tracking by reusing cache.
-        self.fd += 1
-        return self.fd
+        key = path[1:]
+        logger.info('opening for %s', key)
+
+        # the idfe is the stable identifier for this "version" of the
+        # given path (id of fileentry), fp is the file pointer.
+        idfe, fp = self._mapping_open(key)
+        # initial position is 0
+        pos = 0
+        # add this to mapping, accompanied by the current position of 0
+        # this is the open_entry and its id is the fh returned.
+        open_entry = [fp, pos, idfe]
+        # TODO ideally, the idfe is returned as the fh, but we need
+        # additional tracking on all open handles.  Reference counting
+        # should be use.
+        fh = id(open_entry)
+        self.open_entries[fh] = open_entry
+        return fh
 
     def release(self, path, fh):
-        """
-        TODO: implement of release of file handle for better memory
-        handling.
-        """
+        fp, pos, idfe = self.open_entries.pop(fh, None)
+        if fp:
+            fp.close()
 
     def read(self, path, size, offset, fh):
         key = path[1:]
-        logger.info('reading data for %s', key)
-        data = self.mapping.readfile(key)
-        return data[offset:offset + size]
+        logger.info('reading data for %s (fh:%#x)', key, fh)
+        open_entry = self.open_entries.get(fh)
+        if not open_entry:
+            raise FuseOSError(EIO)
+        zf, pos, idfe = open_entry
+        seek = offset - pos
+        if seek < 0:
+            # have to reopen...
+            new_idfe, zf = self._mapping_open(key)
+            if idfe != new_idfe:
+                # different file entry, ignoring by kiling this
+                raise FuseOSError(EIO)
+            # overwrite the open_entry's zipfile with the new one.
+            open_entry[0] = zf
+            # reset rest of the values
+            seek = offset
+            pos = 0
+        junk = zf.read(seek)
+        open_entry[1] = pos + size
+        return zf.read(size)
 
     def readdir(self, path, fh):
         key = path[1:]

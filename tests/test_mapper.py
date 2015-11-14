@@ -766,3 +766,24 @@ class DefaultMapperTestCase(unittest.TestCase):
             'file6': (target, 'file6', 33),
             'file7': ('dummy.zip', 'file7', 1),
         })
+
+    def test_mapping_open_simple(self):
+        target = path('demo1.zip')
+        m = DefaultMapper(target)
+        self.assertEqual(
+            m.open('file1')[0], id(m.mapping['file1']))
+        self.assertEqual(
+            m.open('file1')[1].read(), b'b026324c6904b2a9cb4b88d6d61c81d1\n')
+
+    def test_mapping_open_complex(self):
+        demo3 = path('demo3.zip')
+        demo4 = path('demo4.zip')
+        m = DefaultMapper()
+        m.load_archive(demo3)
+        m.load_archive(demo4)
+        self.assertEqual(m.open('demo/dir1/file1')[1].read(1), b'b')
+
+    def test_mapping_open_missing(self):
+        m = DefaultMapper()
+        m._load_infolist('/nowhere/no_such_file.zip', [zipinfo('demo.txt')])
+        self.assertFalse(m.open('demo.txt'))

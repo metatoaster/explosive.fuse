@@ -37,22 +37,60 @@ class ExplosiveFsTestCase(unittest.TestCase):
         with self.assertRaises(FuseOSError):
             fs.getattr('/file1')
 
-    def test_open(self):
+    def test_open_release(self):
         fs = ExplosiveFUSE([path('demo1.zip')], include_arcname=True)
-        # TODO figure out what the flags are.
-        self.assertEqual(fs.open('/demo1.zip/file1', 0), 1)
-        self.assertEqual(fs.open('/demo1.zip/file1', 0), 2)
+        fh = fs.open('/demo1.zip/file1', 0)
+        self.assertTrue(fh > 0)
+        self.assertIn(fh, fs.open_entries)
+        open_entry = fs.open_entries[fh]
+        self.assertEqual(
+            open_entry[2], id(fs.mapping.mapping['demo1.zip']['file1']))
+        fp = open_entry[0]
+        fs.release('/demo1.zip/file1', fh)
+        self.assertTrue(fp.closed)
 
     def test_read(self):
         fs = ExplosiveFUSE(
             [path('demo1.zip'), path('demo2.zip')],
             include_arcname=True,
         )
-        # TODO figure out how to test correct usage of fh.
         fh = fs.open('/demo1.zip/file1', 0)
         self.assertEqual(fs.read('/demo1.zip/file1', 1, 0, fh), b'b')
         self.assertEqual(fs.read('/demo1.zip/file1', 1, 1, fh), b'0')
         self.assertEqual(fs.read('/demo1.zip/file1', 1, 2, fh), b'2')
+
+    def test_reread(self):
+        fs = ExplosiveFUSE([path('demo3.zip')],
+            include_arcname=False, overwrite=True)
+        fh = fs.open('/demo/dir1/file1', 0)
+        self.assertEqual(fs.read('/demo/dir1/file1', 1, 0, fh), b'b')
+        self.assertEqual(fs.read('/demo/dir1/file1', 1, 0, fh), b'b')
+        self.assertEqual(fs.read('/demo/dir1/file1', 1, 2, fh), b'2')
+        self.assertEqual(fs.read('/demo/dir1/file1', 1, 0, fh), b'b')
+        self.assertEqual(fs.read('/demo/dir1/file1', 1, 1, fh), b'0')
+        fs.mapping.load_archive(path('demo4.zip'))
+        # keep reading should be fine
+        self.assertEqual(fs.read('/demo/dir1/file1', 1, 2, fh), b'2')
+        # but try to restart, it will fail because demo4.zip was read.
+        # and overwrite was specified.
+        with self.assertRaises(FuseOSError):
+            fs.read('/demo/dir1/file1', 1, 0, fh)
+
+    def test_read_no_such_path(self):
+        fs = ExplosiveFUSE([path('demo3.zip')],
+            include_arcname=False, overwrite=True)
+        with self.assertRaises(FuseOSError):
+            fs.open('/no/such/file', 0)
+
+    def test_read_misbehaved(self):
+        # this normally shouldn't happen
+        fs = ExplosiveFUSE([path('demo3.zip')],
+            include_arcname=False, overwrite=True)
+        fh = fs.open('/demo/dir1/file1', 0)
+        self.assertEqual(fs.read('/demo/dir1/file1', 1, 0, fh), b'b')
+        fs.release('/demo/dir1/file1', fh)
+        with self.assertRaises(FuseOSError):
+            fs.read('/demo/dir1/file1', 1, 0, fh)
 
     def test_readdir(self):
         fs = ExplosiveFUSE(
