@@ -35,7 +35,7 @@ dir_record = dict(
     st_ctime=now,
     st_mtime=now,
     st_atime=now,
-    st_nlink=2,
+    st_nlink=2,  # emulated value, ignores links by subdirectories.
 )
 
 link_record = dict(

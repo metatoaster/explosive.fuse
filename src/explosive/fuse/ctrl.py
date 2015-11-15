@@ -118,8 +118,11 @@ def get_argparse():
         help='The archive(s) to generate directory structures with')
     parser.add_argument(
         '--overwrite', dest='overwrite', action='store_true',
-        help='Existing file entries will be overwritten by later file entries '
-             'if they share the same generated path.')
+        help='Newly added entries will overlay existing entries of a given '
+             'name for a name collision, as if overwriting the existing '
+             'version. Default behavior to keep the oldest added file in '
+             'that place until its source archive is removed, then the next '
+             'one added with that name then be presented there.')
     parser.add_argument(
         '--omit-arcname', dest='include_arcname', action='store_false',
         help='Omit the basename of the origin archive from the generated '
