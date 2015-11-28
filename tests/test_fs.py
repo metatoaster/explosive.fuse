@@ -5,40 +5,41 @@ from os.path import join
 from fuse import FuseOSError
 
 from explosive.fuse.fs import ExplosiveFUSE
+from explosive.fuse.fs import ManagedExplosiveFUSE
 from explosive.fuse.fs import SymlinkFUSE
 from explosive.fuse import pathmaker
 
 path = lambda p: join(dirname(__file__), 'data', p)
 
 
-class ExplosiveFsTestCase(unittest.TestCase):
+class BaseExplosiveFsTestCase(object):
 
     def test_simple(self):
-        fs = ExplosiveFUSE([path('demo1.zip')])
+        fs = self.factory([path('demo1.zip')])
         self.assertEqual(fs.mapping.pathmaker.__name__, 'default')
 
-        fs = ExplosiveFUSE([path('demo1.zip')], _pathmaker=pathmaker.default())
+        fs = self.factory([path('demo1.zip')], _pathmaker=pathmaker.default())
         self.assertEqual(fs.mapping.pathmaker.__name__, 'default')
 
-        fs = ExplosiveFUSE([path('demo1.zip')], pathmaker_name='junk')
+        fs = self.factory([path('demo1.zip')], pathmaker_name='junk')
         self.assertEqual(fs.mapping.pathmaker.__name__, 'junk')
 
     def test_getattr(self):
-        fs = ExplosiveFUSE([path('demo1.zip')])
+        fs = self.factory([path('demo1.zip')])
         self.assertEqual(fs.getattr('/')['st_mode'], 0o40555)
         self.assertEqual(fs.getattr('/file1')['st_mode'], 0o100444)
         self.assertEqual(fs.getattr('/file1')['st_size'], 33)
         with self.assertRaises(FuseOSError):
             fs.getattr('/no_such_file')
 
-        fs = ExplosiveFUSE([path('demo1.zip')], include_arcname=True)
+        fs = self.factory([path('demo1.zip')], include_arcname=True)
         self.assertEqual(fs.getattr('/demo1.zip')['st_mode'], 0o40555)
         self.assertEqual(fs.getattr('/demo1.zip/file1')['st_mode'], 0o100444)
         with self.assertRaises(FuseOSError):
             fs.getattr('/file1')
 
     def test_open_release(self):
-        fs = ExplosiveFUSE([path('demo1.zip')], include_arcname=True)
+        fs = self.factory([path('demo1.zip')], include_arcname=True)
         fh = fs.open('/demo1.zip/file1', 0)
         self.assertTrue(fh > 0)
         self.assertIn(fh, fs.open_entries)
@@ -50,7 +51,7 @@ class ExplosiveFsTestCase(unittest.TestCase):
         self.assertTrue(fp.closed)
 
     def test_read(self):
-        fs = ExplosiveFUSE(
+        fs = self.factory(
             [path('demo1.zip'), path('demo2.zip')],
             include_arcname=True,
         )
@@ -60,7 +61,7 @@ class ExplosiveFsTestCase(unittest.TestCase):
         self.assertEqual(fs.read('/demo1.zip/file1', 1, 2, fh), b'2')
 
     def test_reread(self):
-        fs = ExplosiveFUSE([path('demo3.zip')],
+        fs = self.factory([path('demo3.zip')],
             include_arcname=False, overwrite=True)
         fh = fs.open('/demo/dir1/file1', 0)
         self.assertEqual(fs.read('/demo/dir1/file1', 1, 0, fh), b'b')
@@ -77,14 +78,14 @@ class ExplosiveFsTestCase(unittest.TestCase):
             fs.read('/demo/dir1/file1', 1, 0, fh)
 
     def test_read_no_such_path(self):
-        fs = ExplosiveFUSE([path('demo3.zip')],
+        fs = self.factory([path('demo3.zip')],
             include_arcname=False, overwrite=True)
         with self.assertRaises(FuseOSError):
             fs.open('/no/such/file', 0)
 
     def test_read_misbehaved(self):
         # this normally shouldn't happen
-        fs = ExplosiveFUSE([path('demo3.zip')],
+        fs = self.factory([path('demo3.zip')],
             include_arcname=False, overwrite=True)
         fh = fs.open('/demo/dir1/file1', 0)
         self.assertEqual(fs.read('/demo/dir1/file1', 1, 0, fh), b'b')
@@ -93,7 +94,7 @@ class ExplosiveFsTestCase(unittest.TestCase):
             fs.read('/demo/dir1/file1', 1, 0, fh)
 
     def test_readdir(self):
-        fs = ExplosiveFUSE(
+        fs = self.factory(
             [path('demo1.zip'), path('demo2.zip')],
             include_arcname=True,
         )
@@ -105,13 +106,28 @@ class ExplosiveFsTestCase(unittest.TestCase):
                 'file5', 'file6'])
 
     def test_statfs(self):
-        fs = ExplosiveFUSE(
+        fs = self.factory(
             [path('demo1.zip'), path('demo2.zip')],
             include_arcname=True,
         )
         report = fs.statfs('/')
         # This should always be true.
         self.assertEqual(report['f_bavail'], 0)
+
+
+class ExplosiveFsTestCase(BaseExplosiveFsTestCase, unittest.TestCase):
+
+    factory = ExplosiveFUSE
+
+
+class ManagedExplosiveFsTestCase(BaseExplosiveFsTestCase, unittest.TestCase):
+    """
+    Ensures that the basic functions are unaffected.
+    """
+
+    def factory(self, *args, **kwargs):
+        fs = ManagedExplosiveFUSE('/mnt', '/.management', *args, **kwargs)
+        return fs
 
 
 class SymlinkFUSETestCase(unittest.TestCase):

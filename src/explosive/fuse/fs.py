@@ -220,3 +220,13 @@ class SymlinkFUSE(LoggingMixIn, Operations):
 
     def statfs(self, path):
         return {'f_bsize': 0, 'f_blocks': 0, 'f_bavail': 0}
+
+
+class ManagedExplosiveFUSE(ExplosiveFUSE):
+    """
+    ExplosiveFS with a management path
+    """
+
+    def __init__(self, mount_root, base_path, *a, **kw):
+        self.symlinks = SymlinkFUSE(mount_root, base_path)
+        super(ManagedExplosiveFUSE, self).__init__(*a, **kw)
