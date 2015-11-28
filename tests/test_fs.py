@@ -152,7 +152,7 @@ class ManagedExplosiveFsTestCase(BaseExplosiveFsTestCase, unittest.TestCase):
 
         self.assertEqual(
             sorted(fs('readdir', '/.management', 0)),
-            ['.', '..', 'demo1.zip', 'demo2.zip'],
+            ['.', '..', '0_demo1.zip', '1_demo2.zip'],
         )
 
     def test_unloaded_preloaded(self):
@@ -164,7 +164,7 @@ class ManagedExplosiveFsTestCase(BaseExplosiveFsTestCase, unittest.TestCase):
                 '.', '..', '.management', 'demo',
                 'file1', 'file2', 'file3', 'file4', 'file5', 'file6'])
 
-        fs('unlink', '/.management/demo1.zip')
+        fs('unlink', '/.management/0_demo1.zip')
         self.assertEqual(sorted(fs('readdir', '/', 0)), [
             '.', '..', '.management', 'demo'])
 
@@ -196,7 +196,7 @@ class ManagedExplosiveFsTestCase(BaseExplosiveFsTestCase, unittest.TestCase):
         self.assertEqual(fs('getattr', '/file1')['st_mode'], 0o40555)
         self.assertEqual(fs('getattr', '/file2')['st_mode'], 0o100444)
         self.assertEqual(fs('readdir', '/file1', 0), [
-            '.', '..', 'demo1.zip'])
+            '.', '..', '0_demo1.zip'])
 
     def test_management_supercede_getattr_dir_confict(self):
         # test getattr actually get the directory version not the

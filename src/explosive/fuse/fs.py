@@ -236,7 +236,8 @@ class ManagedExplosiveFUSE(ExplosiveFUSE):
         self.symlinkfs = SymlinkFUSE(mount_root, base_path)
         super(ManagedExplosiveFUSE, self).__init__(*a, **kw)
         self.symlinkfs.symlinks.update(
-            {basename(k): k for k in self.mapping.archives.keys()})
+            {'%d_%s' % (n, basename(k)): k
+             for n, k in enumerate(sorted(self.mapping.archives.keys()))})
 
     def readdir(self, path, fh):
         result = super(ManagedExplosiveFUSE, self).readdir(path, fh)
