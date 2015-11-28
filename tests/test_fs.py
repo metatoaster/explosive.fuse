@@ -168,6 +168,23 @@ class ManagedExplosiveFsTestCase(BaseExplosiveFsTestCase, unittest.TestCase):
         self.assertEqual(sorted(fs('readdir', '/', 0)), [
             '.', '..', '.management', 'demo'])
 
+    def test_overload_dupes(self):
+        # have to override this.
+        fs = self.factory([path('demo2.zip')])
+
+        self.assertEqual(
+            sorted(fs('readdir', '/', 0)), ['.', '..', '.management', 'demo'])
+        self.assertEqual(sorted(fs('readdir', '/.management', 0)), [
+                '.', '..', '0_demo2.zip'])
+
+        # this is not supported because the internal mapping has that
+        # path.
+        with self.assertRaises(FuseOSError):
+            fs('symlink', '/.management/demo2.zip', path('demo2.zip'))
+
+        self.assertEqual(sorted(fs('readdir', '/.management', 0)), [
+                '.', '..', '0_demo2.zip'])
+
     def test_getattr_mangement(self):
         fs = ManagedExplosiveFUSE('/mnt', '.management', [])
         self.assertEqual(fs('getattr', '/.management')['st_mode'], 0o40555)
@@ -175,10 +192,12 @@ class ManagedExplosiveFsTestCase(BaseExplosiveFsTestCase, unittest.TestCase):
     def test_symlink(self):
         fs = ManagedExplosiveFUSE('/mnt', '.management', [])
         self.assertEqual(fs.readdir('/', 0), ['.', '..', '.management'])
+        self.assertEqual(sorted(fs('readdir', '/.management', 0)), ['.', '..'])
 
         with self.assertRaises(FuseOSError):
             fs('symlink', '/somewhere/else', '/target')
         self.assertEqual(fs.readdir('/', 0), ['.', '..', '.management'])
+        self.assertEqual(sorted(fs('readdir', '/.management', 0)), ['.', '..'])
 
         fs('symlink', '/.management/demo1.zip', path('demo1.zip'))
         self.assertEqual(sorted(fs('readdir', '/', 0)), [
@@ -188,6 +207,14 @@ class ManagedExplosiveFsTestCase(BaseExplosiveFsTestCase, unittest.TestCase):
 
         fs('unlink', '/.management/demo1.zip')
         self.assertEqual(fs('readdir', '/', 0), ['.', '..', '.management'])
+
+    def test_symlink_bad_archive(self):
+        fs = ManagedExplosiveFUSE('/mnt', '.management', [])
+        self.assertEqual(fs.readdir('/.management', 0), ['.', '..'])
+
+        with self.assertRaises(FuseOSError):
+            fs('symlink', '/.management/bad_archive', '/no_such_archive')
+        self.assertEqual(fs.readdir('/.management', 0), ['.', '..'])
 
     def test_management_supercede_getattr_file_conflict(self):
         # test getattr actually get the directory version not the

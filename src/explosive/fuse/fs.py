@@ -248,10 +248,20 @@ class ManagedExplosiveFUSE(ExplosiveFUSE):
     def __call__(self, op, path, *args):
         if path.startswith(self.symlinkfs.base_path):
             result = getattr(self.symlinkfs, op)(path, *args)
-            # XXX there is no error handling here.
+
             if op == 'symlink':
-                self.mapping.load_archive(result)
+                if result in self.mapping.archives:
+                    # no support of multiple symlinks to the same target
+                    self.symlinkfs.unlink(path)
+                    raise FuseOSError(ENOTSUP)
+
+                if not self.mapping.load_archive(result):
+                    self.symlinkfs.unlink(path)
+                    # Assume I/O error due to archive inaccessible.
+                    raise FuseOSError(EIO)
+
             elif op == 'unlink':
                 self.mapping.unload_archive(result)
+
             return result
         return super(ManagedExplosiveFUSE, self).__call__(op, path, *args)
