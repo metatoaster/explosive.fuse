@@ -699,6 +699,15 @@ class DefaultMapperTestCase(unittest.TestCase):
             'some_path': (target, 'demo/some_path', 32),
         })
 
+    def test_mapping_load_dupe(self):
+        demo3 = path('demo3.zip')
+        m = DefaultMapper()
+        m.load_archive(demo3)
+        self.assertEqual(list(m.archives.keys()), [path('demo3.zip')])
+        m.load_archive(demo3)
+        # the timestamp would have changed.
+        self.assertEqual(list(m.archives.keys()), [path('demo3.zip')])
+
     def test_mapping_complex_multiple(self):
         demo3 = path('demo3.zip')
         demo4 = path('demo4.zip')
