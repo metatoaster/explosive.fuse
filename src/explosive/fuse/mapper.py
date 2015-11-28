@@ -262,6 +262,10 @@ class DefaultMapper(object):
             logger.exception('Exception')
         return False
 
+    def unload_archive(self, archive_path):
+        self._unload_infolist(archive_path)
+        logger.info('unloaded `%s`', archive_path)
+
     def open(self, path):
         info = self.traverse(path)
         if info is None:

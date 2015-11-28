@@ -126,8 +126,88 @@ class ManagedExplosiveFsTestCase(BaseExplosiveFsTestCase, unittest.TestCase):
     """
 
     def factory(self, *args, **kwargs):
-        fs = ManagedExplosiveFUSE('/mnt', '/.management', *args, **kwargs)
+        fs = ManagedExplosiveFUSE('/mnt', '.management', *args, **kwargs)
         return fs
+
+    def test_init_error(self):
+        with self.assertRaises(ValueError):
+            fs = ManagedExplosiveFUSE('/mnt', '/nested/.management', [])
+
+    def test_readdir(self):
+        # have to override this.
+        fs = self.factory(
+            [path('demo1.zip'), path('demo2.zip')],
+            include_arcname=True,
+        )
+
+        self.assertEqual(
+            sorted(fs('readdir', '/', 0)),
+            ['.', '..', '.management', 'demo1.zip', 'demo2.zip'],
+        )
+
+        self.assertEqual(
+            sorted(fs('readdir', '/demo1.zip', 0)), [
+                '.', '..', 'file1', 'file2', 'file3', 'file4',
+                'file5', 'file6'])
+
+        self.assertEqual(
+            sorted(fs('readdir', '/.management', 0)),
+            ['.', '..', 'demo1.zip', 'demo2.zip'],
+        )
+
+    def test_unloaded_preloaded(self):
+        # have to override this.
+        fs = self.factory([path('demo1.zip'), path('demo2.zip')])
+
+        self.assertEqual(
+            sorted(fs('readdir', '/', 0)), [
+                '.', '..', '.management', 'demo',
+                'file1', 'file2', 'file3', 'file4', 'file5', 'file6'])
+
+        fs('unlink', '/.management/demo1.zip')
+        self.assertEqual(sorted(fs('readdir', '/', 0)), [
+            '.', '..', '.management', 'demo'])
+
+    def test_getattr_mangement(self):
+        fs = ManagedExplosiveFUSE('/mnt', '.management', [])
+        self.assertEqual(fs('getattr', '/.management')['st_mode'], 0o40555)
+
+    def test_symlink(self):
+        fs = ManagedExplosiveFUSE('/mnt', '.management', [])
+        self.assertEqual(fs.readdir('/', 0), ['.', '..', '.management'])
+
+        with self.assertRaises(FuseOSError):
+            fs('symlink', '/somewhere/else', '/target')
+        self.assertEqual(fs.readdir('/', 0), ['.', '..', '.management'])
+
+        fs('symlink', '/.management/demo1.zip', path('demo1.zip'))
+        self.assertEqual(sorted(fs('readdir', '/', 0)), [
+            '.', '..', '.management', 'file1', 'file2', 'file3', 'file4',
+            'file5', 'file6',
+        ])
+
+        fs('unlink', '/.management/demo1.zip')
+        self.assertEqual(fs('readdir', '/', 0), ['.', '..', '.management'])
+
+    def test_management_supercede_getattr_file_conflict(self):
+        # test getattr actually get the directory version not the
+        # file version.
+        fs = ManagedExplosiveFUSE('/mnt', 'file1', [path('demo1.zip')])
+        self.assertEqual(fs('getattr', '/file1')['st_mode'], 0o40555)
+        self.assertEqual(fs('getattr', '/file2')['st_mode'], 0o100444)
+        self.assertEqual(fs('readdir', '/file1', 0), [
+            '.', '..', 'demo1.zip'])
+
+    def test_management_supercede_getattr_dir_confict(self):
+        # test getattr actually get the directory version not the
+        # file version.
+        fs = ManagedExplosiveFUSE(
+            '/mnt', 'demo1.zip', [], include_arcname=True)
+        fs('symlink', '/demo1.zip/demo1.zip', path('demo1.zip'))
+        self.assertEqual(fs('readdir', '/', 0), ['.', '..', 'demo1.zip'])
+        self.assertEqual(fs('readdir', '/demo1.zip', 0), [
+            '.', '..', 'demo1.zip'])
+        self.assertEqual(fs('getattr', '/demo1.zip')['st_mode'], 0o40555)
 
 
 class SymlinkFUSETestCase(unittest.TestCase):
