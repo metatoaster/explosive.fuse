@@ -1,5 +1,8 @@
 import sys
 import logging
+from os.path import abspath
+from os.path import join
+from os import getcwd
 
 from argparse import ArgumentError
 from argparse import ArgumentParser
@@ -10,6 +13,7 @@ from fuse import FUSE
 
 from explosive.fuse import pathmaker
 from explosive.fuse.fs import ExplosiveFUSE
+from explosive.fuse.fs import ManagedExplosiveFUSE
 
 
 class _Version(Action):
@@ -111,6 +115,16 @@ def get_argparse():
         '-d', '--debug', dest='debug', action='store_true',
         help='Run with debug messages.')
     parser.add_argument(
+        '-m', '--manager', dest='manager', action='store_true',
+        help='Enable the symlink manager directory, where all the archives '
+             'indexed and available within this ExplosiveFUSE instance are '
+             'exposed as symlinks.  These symlinks can be removed to remove '
+             'the associated files from the filesystem, and new symlinks to '
+             'other archives can be created to add them to the filesystem.')
+    parser.add_argument(
+        '--manager-dir', dest='manager_dir', nargs='?', default='.manager',
+        help='Name of the symlink manager directory.')
+    parser.add_argument(
         'dir',
         help='The directory to mount the compressed archive(s) to.')
     parser.add_argument(
@@ -148,17 +162,26 @@ def main(args=None):
             format='%(asctime)s %(levelname)s %(name)s %(message)s'
         )
 
-    try:
-        FUSE(
-            ExplosiveFUSE(
-                parsed_args.archives,
-                _pathmaker=parsed_args.pathmaker,
-                overwrite=parsed_args.overwrite,
-                include_arcname=parsed_args.include_arcname,
-            ),
-            parsed_args.dir,
-            foreground=parsed_args.foreground,
+    if parsed_args.manager:
+        mount_root = abspath(join(getcwd(), parsed_args.dir))
+        fuse = ManagedExplosiveFUSE(
+            mount_root,
+            parsed_args.manager_dir,
+            parsed_args.archives,
+            _pathmaker=parsed_args.pathmaker,
+            overwrite=parsed_args.overwrite,
+            include_arcname=parsed_args.include_arcname,
         )
+    else:
+        fuse = ExplosiveFUSE(
+            parsed_args.archives,
+            _pathmaker=parsed_args.pathmaker,
+            overwrite=parsed_args.overwrite,
+            include_arcname=parsed_args.include_arcname,
+        )
+
+    try:
+        FUSE(fuse, parsed_args.dir, foreground=parsed_args.foreground)
     except RuntimeError:
         # assume error messages are properly handled.
         sys.exit(255)

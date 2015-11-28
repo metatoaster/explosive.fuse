@@ -92,6 +92,11 @@ class IntegrationTestCase(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 ctrl.main(['-d', '/tmp/to/no/such/dir', 'somezip.zip'])
 
+    def test_failure_with_manager(self):
+        with capture_stdio() as stdio:
+            with self.assertRaises(SystemExit):
+                ctrl.main(['-m', '-d', '/tmp/to/no/such/dir', 'somezip.zip'])
+
     def test_invalid_layout_choice(self):
         with capture_stdio() as stdio:
             in_, out, err = stdio
@@ -164,3 +169,60 @@ class AcceptanceTestCase(unittest.TestCase):
             sorted(os.listdir(join(self.mountpoint, 'demo2.zip', 'demo'))),
             ['file1', 'file2', 'file3', 'file4', 'file5', 'file6']
         )
+
+    def test_success_managed_default(self):
+        dummy1 = path('demo1.zip')
+        dummy2 = path('demo2.zip')
+
+        # This will terminate, so spawn a separate process.
+        p = Process(
+            target=ctrl.main, args=(['-md', self.mountpoint, dummy1, dummy2],))
+        p.start()
+        p.join()
+
+        self.assertEqual(
+            sorted(os.listdir(self.mountpoint)),
+            ['.manager', 'demo1.zip', 'demo2.zip'],
+        )
+
+        self.assertEqual(
+            sorted(os.listdir(join(self.mountpoint, '.manager'))),
+            ['0_demo1.zip', '1_demo2.zip']
+        )
+
+        self.assertEqual(
+            sorted(os.listdir(join(self.mountpoint, 'demo1.zip'))),
+            ['file1', 'file2', 'file3', 'file4', 'file5', 'file6']
+        )
+
+        self.assertEqual(
+            sorted(os.listdir(join(self.mountpoint, 'demo2.zip'))),
+            ['demo']
+        )
+
+        self.assertEqual(
+            sorted(os.listdir(join(self.mountpoint, 'demo2.zip', 'demo'))),
+            ['file1', 'file2', 'file3', 'file4', 'file5', 'file6']
+        )
+
+        os.unlink(join(self.mountpoint, '.manager', '0_demo1.zip'))
+        self.assertEqual(
+            sorted(os.listdir(self.mountpoint)),
+            ['.manager', 'demo2.zip'],
+        )
+
+        os.symlink(dummy1, join(self.mountpoint, '.manager', 'archive.zip'))
+
+        self.assertEqual(
+            sorted(os.listdir(join(self.mountpoint, '.manager'))),
+            ['1_demo2.zip', 'archive.zip']
+        )
+
+        self.assertEqual(
+            sorted(os.listdir(self.mountpoint)),
+            ['.manager', 'demo1.zip', 'demo2.zip'],
+        )
+
+        with self.assertRaises(OSError):
+            os.symlink(dummy1, join(
+                self.mountpoint, '.manager', 'alternate.zip'))

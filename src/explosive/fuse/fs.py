@@ -147,7 +147,7 @@ class ExplosiveFUSE(LoggingMixIn, Operations):
         return dict(f_bsize=1024, f_blocks=1024, f_bavail=0)
 
 
-class SymlinkFUSE(LoggingMixIn, Operations):
+class _SymlinkFUSE(LoggingMixIn, Operations):
     """
     A symlink only filesystem that exist in memory.
     """
@@ -211,16 +211,31 @@ class SymlinkFUSE(LoggingMixIn, Operations):
         symkey = basename(path)
         target = abspath(join(self.mount_root, self.base_path[1:], source))
         self.symlinks[symkey] = target
+        # Warning: non-standard return value
         return target
 
     def unlink(self, path):
         symkey = basename(path)
         if symkey not in self.symlinks:
             raise FuseOSError(ENOTSUP)
+        # Warning: non-standard return value
         return self.symlinks.pop(symkey)
 
     def statfs(self, path):
         return {'f_bsize': 0, 'f_blocks': 0, 'f_bavail': 0}
+
+
+class SymlinkFUSE(_SymlinkFUSE):
+    """
+    Standardized implementation for methods that return non-standard
+    values.
+    """
+
+    def symlink(self, path, source):
+        super(SymlinkFUSE, self).symlink(path, source)
+
+    def unlink(self, path):
+        super(SymlinkFUSE, self).unlink(path)
 
 
 class ManagedExplosiveFUSE(ExplosiveFUSE):
@@ -233,7 +248,7 @@ class ManagedExplosiveFUSE(ExplosiveFUSE):
             raise ValueError('Management node must be a valid directory name')
         self.management_node = management_node
         base_path = '/' + management_node
-        self.symlinkfs = SymlinkFUSE(mount_root, base_path)
+        self.symlinkfs = _SymlinkFUSE(mount_root, base_path)
         super(ManagedExplosiveFUSE, self).__init__(*a, **kw)
         self.symlinkfs.symlinks.update(
             {'%d_%s' % (n, basename(k)): k
@@ -259,9 +274,11 @@ class ManagedExplosiveFUSE(ExplosiveFUSE):
                     self.symlinkfs.unlink(path)
                     # Assume I/O error due to archive inaccessible.
                     raise FuseOSError(EIO)
+                return None
 
             elif op == 'unlink':
                 self.mapping.unload_archive(result)
+                return None
 
             return result
         return super(ManagedExplosiveFUSE, self).__call__(op, path, *args)
