@@ -181,7 +181,8 @@ def main(args=None):
         )
 
     try:
-        FUSE(fuse, parsed_args.dir, foreground=parsed_args.foreground)
+        FUSE(fuse, parsed_args.dir, foreground=parsed_args.foreground,
+             nothreads=True)
     except RuntimeError:
         # assume error messages are properly handled.
         sys.exit(255)

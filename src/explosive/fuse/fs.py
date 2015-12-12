@@ -117,14 +117,19 @@ class ExplosiveFUSE(LoggingMixIn, Operations):
 
     def read(self, path, size, offset, fh):
         key = path[1:]
-        logger.info('reading data for %s (fh:%#x)', key, fh)
+        logger.info(
+            'reading data for %s (fh:%#x, size:%d, offset:%d)',
+            key, fh, size, offset)
         open_entry = self.open_entries.get(fh)
         if not open_entry:
             raise FuseOSError(EIO)
         zf, pos, idfe = open_entry
+        logger.debug(
+            'open_entry: zf: %s, pos: %d, idfe: %s', zf, pos, idfe)
         seek = offset - pos
         if seek < 0:
             # have to reopen...
+            logger.info('seek position is %d, need reopening', seek)
             new_idfe, zf = self._mapping_open(key)
             if idfe != new_idfe:
                 # different file entry, ignoring by kiling this
