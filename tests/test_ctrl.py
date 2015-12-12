@@ -104,8 +104,8 @@ class IntegrationTestCase(unittest.TestCase):
                 ctrl.main(['-l', 'nothing'])
             self.assertTrue(err.items[-1].endswith(
                 "error: argument -l/--layout: "
-                "invalid choice: 'nothing' (choose from 'default', "
-                "'flatten', 'junk')\n",
+                "invalid choice: 'nothing' (choose from "
+                "'codepage', 'default', 'flatten', 'junk')\n",
             ))
 
     def test_invalid_layout_arg(self):

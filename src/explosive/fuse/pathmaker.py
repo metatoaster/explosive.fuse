@@ -3,10 +3,32 @@ import re
 FLATTEN_CHAR = '_'
 
 __all__ = [
+    'codepage',
     'default',
     'flatten',
     'junk',
 ]
+
+
+def codepage(target='', original='cp437'):
+    """
+    Treat the names of each file entry in archive as that codepage but
+    generate the equivalent in UTF-8 format.
+    """
+
+    if not target:
+        raise ValueError("target encoding must be supplied.")
+
+    def codepage(inner_path):
+        # Don't encode if python2 (i.e. bytes == str)
+        p = inner_path.encode(original) if bytes != str else inner_path
+        new_path = p.decode(target)
+        frags = new_path.split('/')
+        filename = frags.pop()
+
+        return frags, filename
+
+    return codepage
 
 
 def default():
@@ -87,6 +109,7 @@ def _tokenize_arg(arg):
     # limitations: no empty parameters.
     return [i.replace('\\:', ':')
             for i in re.findall(r'((?:[^:\\]*(?:\\.)?)+)', arg) if i]
+
 
 def _process_arg(arg):
     """

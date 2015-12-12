@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import unittest
 
 from explosive.fuse import pathmaker
@@ -13,6 +14,24 @@ class PathmakerTestCase(unittest.TestCase):
 
         for path, output in pairs:
             self.assertEqual(func(path), output)
+
+    def test_codepage(self):
+        with self.assertRaises(ValueError) as cm:
+            pathmaker.codepage()
+
+        # needed this to mimic the default zipinfo filenames by zipfile
+        # for the respective python versions.
+        teststr = (
+            'é▒é±é╔é┐é═' if bytes != str else
+            b'\x82\xb1\x82\xf1\x82\xc9\x82\xbf\x82\xcd')
+
+        self.assertPathmaker(pathmaker.codepage('shift_jis'), [
+            ('path/to/file', (['path', 'to'], 'file')),
+            ('rootfile', ([], 'rootfile')),
+            ('somedir/', (['somedir'], '')),
+            ('some/nested/dir/', (['some', 'nested', 'dir'], '')),
+            (teststr, ([], u'こんにちは')),
+        ])
 
     def test_default(self):
         self.assertPathmaker(pathmaker.default(), [
