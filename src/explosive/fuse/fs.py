@@ -3,6 +3,8 @@ from os.path import join
 from os.path import abspath
 from os.path import basename
 from os import getcwd
+from os import getgid
+from os import getuid
 
 from errno import ENOENT
 from errno import EIO
@@ -20,6 +22,9 @@ from explosive.fuse.mapper import DefaultMapper
 logger = logging.getLogger(__name__)
 
 now = time()
+st_uid = getuid()
+st_gid = getgid()
+
 # Turn this into a type that always return those key/values to avoid
 # data repetition.
 file_record = dict(
@@ -28,6 +33,8 @@ file_record = dict(
     st_ctime=now,
     st_mtime=now,
     st_atime=now,
+    st_uid=st_uid,
+    st_gid=st_gid,
 )
 
 dir_record = dict(
@@ -36,6 +43,8 @@ dir_record = dict(
     st_mtime=now,
     st_atime=now,
     st_nlink=2,  # emulated value, ignores links by subdirectories.
+    st_uid=st_uid,
+    st_gid=st_gid,
 )
 
 link_record = dict(
@@ -44,6 +53,8 @@ link_record = dict(
     st_ctime=now,
     st_mtime=now,
     st_atime=now,
+    st_uid=st_uid,
+    st_gid=st_gid,
 )
 
 
