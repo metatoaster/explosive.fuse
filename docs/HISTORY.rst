@@ -1,10 +1,21 @@
 Changelog
 =========
 
-Unreleased
-----------
+0.3 (2015-12-12)
+----------------
 
 - Mappings now use absolute path to ensure this works in daemon mode.
+- New layout strategy: codepage can be used to remap non-unicode name
+  encodings to unicode.
+- File ownership now shown as being owned by the user that started the
+  mount process.
+- Symlink management support added; this is enabled using the ``-m``
+  flag, optionally with ``--manager-dir`` to explicitly change where
+  that lies.  This allows loading and unloading of files via the adding
+  and removing of symlinks in the management directory.
+- Decreased memory consumption and performance from reads as inflate
+  is called only on demand.  This however requires single-thread mode
+  for the mean time.
 
 0.2 (2015-10-31)
 ----------------
