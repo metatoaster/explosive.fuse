@@ -198,6 +198,9 @@ class _SymlinkFUSE(LoggingMixIn, Operations):
     def mkdir(self, path, mode):
         raise FuseOSError(ENOTSUP)
 
+    def rename(self, old, new):
+        raise FuseOSError(ENOTSUP)
+
     def readlink(self, path):
         symkey = basename(path)
         return self.symlinks[symkey]

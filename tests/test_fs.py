@@ -293,6 +293,11 @@ class SymlinkFUSETestCase(unittest.TestCase):
         self.assertEqual(
             fs.readdir('/some/nested/structure', 0), ['.', '..', 'here'])
 
+    def test_rename(self):
+        fs = SymlinkFUSE('/mnt', base_path='/.control')
+        with self.assertRaises(FuseOSError):
+            fs.rename('/.cont', '/.cont2')
+
     def test_symlink(self):
         fs = SymlinkFUSE('/mnt')
         fs.symlink('/somewhere/else', '/target/to/file')
