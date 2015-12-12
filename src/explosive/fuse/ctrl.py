@@ -109,11 +109,11 @@ def get_argparse():
         help='More detailed information on the usage of layout presentation '
              'strategy (such as extra arguments).')
     parser.add_argument(
-        '-f', '--foreground', dest='foreground', action='store_true',
-        help='Run in foreground.')
-    parser.add_argument(
         '-d', '--debug', dest='debug', action='store_true',
         help='Run with debug messages.')
+    parser.add_argument(
+        '-f', '--foreground', dest='foreground', action='store_true',
+        help='Run in foreground.')
     parser.add_argument(
         '-m', '--manager', dest='manager', action='store_true',
         help='Enable the symlink manager directory, where all the archives '
@@ -123,14 +123,8 @@ def get_argparse():
              'other archives can be created to add them to the filesystem.')
     parser.add_argument(
         '--manager-dir', dest='manager_dir', nargs='?', default='.manager',
-        help='Name of the symlink manager directory. the default is '
-             "'%(default)s'")
-    parser.add_argument(
-        'dir',
-        help='The directory to mount the compressed archive(s) to.')
-    parser.add_argument(
-        'archives', metavar='archives', nargs='+',
-        help='The archive(s) to generate directory structures with')
+        help='Explictly define the name of the symlink manager directory. '
+             "Default is '%(default)s'.")
     parser.add_argument(
         '--overwrite', dest='overwrite', action='store_true',
         help='Newly added entries will overlay existing entries of a given '
@@ -145,6 +139,12 @@ def get_argparse():
     parser.add_argument(
         '-V', '--version', action='version_verbose',
         help='Print version information and exit.')
+    parser.add_argument(
+        'dir',
+        help='The directory to mount the compressed archive(s) to.')
+    parser.add_argument(
+        'archives', metavar='archives', nargs='+',
+        help='The archive(s) to generate directory structures with')
 
     return parser
 

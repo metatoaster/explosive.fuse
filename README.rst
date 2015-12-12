@@ -118,7 +118,9 @@ Usage
 Simply invoking ``explode`` from the shell this help message will be
 presented::
 
-    usage: explode [-h] [-l <strategy>] [--layout-info] [-f] [-d]
+    usage: explode [-h] [-l <strategy>] [--layout-info] [-d] [-f] [-m]
+                   [--manager-dir [MANAGER_DIR]] [--overwrite] [--omit-arcname]
+                   [-V]
                    dir archives [archives ...]
 
 In the most simple form the command can simply be invoked like so::
@@ -131,16 +133,16 @@ verify that this worked, a simple ``ls`` can be used::
 
     $ ls -l /tmp/mnt/
     total 0
-    -r--r--r-- 1 root root 33 Oct 26 23:19 file1
-    -r--r--r-- 1 root root 33 Oct 26 23:19 file2
-    -r--r--r-- 1 root root 33 Oct 26 23:19 file3
-    -r--r--r-- 1 root root 33 Oct 26 23:19 file4
-    -r--r--r-- 1 root root 33 Oct 26 23:19 file5
-    -r--r--r-- 1 root root 33 Oct 26 23:19 file6
+    -r--r--r-- 1 user user 33 Oct 26 23:19 file1
+    -r--r--r-- 1 user user 33 Oct 26 23:19 file2
+    -r--r--r-- 1 user user 33 Oct 26 23:19 file3
+    -r--r--r-- 1 user user 33 Oct 26 23:19 file4
+    -r--r--r-- 1 user user 33 Oct 26 23:19 file5
+    -r--r--r-- 1 user user 33 Oct 26 23:19 file6
 
-Currently, all files will simply be presented as owned by root and is
-read-only by all users.  If you wish to restrict this simply ensure the
-directory before is only accessible to the desired users.
+Files are presented as being owned by the user that created this mount
+point.  For specifics on access permisssions, please consult the fuse
+user manual (i.e. ``man fuse``).
 
 To unmount, simply call::
 
@@ -157,8 +159,8 @@ name of the source archive file.  This can be verified::
 
     $ ls -l /tmp/mnt/
     total 0
-    dr-xr-xr-x 2 root root 0 Oct 26 23:22 demo1.zip
-    dr-xr-xr-x 2 root root 0 Oct 26 23:22 demo2.zip
+    dr-xr-xr-x 2 user user 0 Oct 26 23:22 demo1.zip
+    dr-xr-xr-x 2 user user 0 Oct 26 23:22 demo2.zip
 
 Layout Strategies
 -----------------
@@ -173,6 +175,11 @@ value of each positional argument(s)).  Detailed information on every
 available strategies are available by calling ``explode --layout-info``,
 but for completeness sake the following strategies are provided by a
 default installation:
+
+codepage
+    Decode the filename entries into unicode from the specified
+    codepage.  Example: ``-l codepage:shift_jis`` will decode filenames
+    that look like ``é▒é±é╔é┐é═`` into ``こんにちは``.
 
 default
     Present file entries as they were within their respective directory
@@ -198,23 +205,39 @@ An important note: by default, the basename of the archive file will be
 prepended to each of its file entries before being filtered through the
 layout strategy, unless the ``--omit-arcname`` flag is used.
 
-Other Flags
------------
+Flags for fine-tuning filesystem behavior
+-----------------------------------------
 
-Sometimes it may be desirable to omit the name of the source archive
-files from the generated paths.  This can be done using the
-``--omit-arcname`` flag.
+``--debug``
+    Print debug messages to stdout.
 
-For example, if we have multiple zip files with names ``SNS_001.zip`` up
-to ``SNS_100.zip``, and inside there we simply have files like
-``01.jpg`` up to ``20.jpg`` lying at the root level, activating the
-``--omit-arcname`` flag flag will result in only 20 files from
-``SNS_001.zip`` archive being accessible as by default as that was the
-first file specified to be loaded.
+``--foreground``
+    Run in foreground.
 
-Of course, sometimes it is useful to clobber entries but only keeping
-the last ones in.  To do this simply specify the ``--overwrite`` flag to
-overwrite any existing entries the mapping process may encounter.
+``-m, --manager``
+    Enable the symlink manager directory.  This option exposes all the
+    archive files under the management directory (defined by the
+    ``--manager-dir`` flag, default is ``.manager`` under the root of
+    the mount point) as symlinks.  Creating symlinks to valid archive
+    files will add the file entries in them to the filesystem, and
+    removing the symlinks will remove its associated entries from the
+    filesystem.
+
+``--omit-arcname``
+    Sometimes it may be desirable to omit the name of the source archive
+    files from the generated paths.
+
+    For example, if we have multiple archive files with names
+    ``SNS_001.zip`` up to ``SNS_100.zip``, and inside there we simply
+    have files like ``01.jpg`` up to ``20.jpg`` lying at the root level,
+    activating the ``--omit-arcname`` flag flag will result in only 20
+    files from ``SNS_001.zip`` archive being accessible as by default as
+    that was the first file specified to be loaded.
+
+``--overwrite``
+    Useful when there are multiple file entries of the same name from
+    multiple archives and only the latest one is desired, this flag will
+    "overwrite" any existing entries the mapping process may encounter.
 
 
 Troubleshooting
