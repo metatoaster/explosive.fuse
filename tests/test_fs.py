@@ -1,4 +1,6 @@
 import unittest
+import tempfile
+import shutil
 from os.path import dirname
 from os.path import join
 
@@ -23,6 +25,13 @@ class BaseExplosiveFsTestCase(object):
 
         fs = self.factory([path('demo1.zip')], pathmaker_name='junk')
         self.assertEqual(fs.mapping.pathmaker.__name__, 'junk')
+
+    def test_load_dupe(self):
+        fs = self.factory(
+            [path('demo1.zip'), path('demo1.zip')],
+            include_arcname=True,
+        )
+        self.assertEqual(list(fs.mapping.mapping.keys()), ['demo1.zip'])
 
     def test_getattr(self):
         fs = self.factory([path('demo1.zip')])
@@ -133,6 +142,46 @@ class ManagedExplosiveFsTestCase(BaseExplosiveFsTestCase, unittest.TestCase):
         with self.assertRaises(ValueError):
             fs = ManagedExplosiveFUSE('/mnt', '/nested/.management', [])
 
+    def test_load_dupe(self):
+        # overriding this for an extra test.
+        fs = self.factory(
+            [path('demo1.zip'), path('demo1.zip')],
+            include_arcname=True,
+        )
+        self.assertEqual(list(fs.mapping.mapping.keys()), ['demo1.zip'])
+
+        self.assertEqual(
+            sorted(fs('readdir', '/.management', 0)),
+            ['.', '..', 'demo1.zip'],
+        )
+
+    def test_load_dupe_name(self):
+        # A test for the symlink with two filenames with different full
+        # paths but same basename.
+        tmpdir = tempfile.mkdtemp()
+        self.addCleanup(lambda: shutil.rmtree(tmpdir))
+        target = join(tmpdir, 'demo1.zip')
+        shutil.copy(path('demo2.zip'), target)
+        fs = self.factory([path('demo1.zip'), target], include_arcname=True)
+        self.assertEqual(list(fs.mapping.mapping.keys()), ['demo1.zip'])
+
+        # Test to see that both entries are created, one with a suffix.
+        self.assertEqual(
+            sorted(fs('readdir', '/.management', 0)),
+            ['.', '..', 'demo1.zip', 'demo1.zip_1'],
+        )
+
+        self.assertEqual(
+            sorted(fs('readdir', '/', 0)),
+            ['.', '..', '.management', 'demo1.zip']
+        )
+
+        self.assertEqual(
+            sorted(fs('readdir', '/demo1.zip', 0)), [
+                '.', '..', 'demo', 'file1', 'file2', 'file3',
+                'file4', 'file5', 'file6']
+        )
+
     def test_readdir(self):
         # have to override this.
         fs = self.factory(
@@ -152,7 +201,7 @@ class ManagedExplosiveFsTestCase(BaseExplosiveFsTestCase, unittest.TestCase):
 
         self.assertEqual(
             sorted(fs('readdir', '/.management', 0)),
-            ['.', '..', '0_demo1.zip', '1_demo2.zip'],
+            ['.', '..', 'demo1.zip', 'demo2.zip'],
         )
 
     def test_unloaded_preloaded(self):
@@ -164,7 +213,7 @@ class ManagedExplosiveFsTestCase(BaseExplosiveFsTestCase, unittest.TestCase):
                 '.', '..', '.management', 'demo',
                 'file1', 'file2', 'file3', 'file4', 'file5', 'file6'])
 
-        fs('unlink', '/.management/0_demo1.zip')
+        fs('unlink', '/.management/demo1.zip')
         self.assertEqual(sorted(fs('readdir', '/', 0)), [
             '.', '..', '.management', 'demo'])
 
@@ -175,15 +224,15 @@ class ManagedExplosiveFsTestCase(BaseExplosiveFsTestCase, unittest.TestCase):
         self.assertEqual(
             sorted(fs('readdir', '/', 0)), ['.', '..', '.management', 'demo'])
         self.assertEqual(sorted(fs('readdir', '/.management', 0)), [
-                '.', '..', '0_demo2.zip'])
+                '.', '..', 'demo2.zip'])
 
         # this is not supported because the internal mapping has that
-        # path.
+        # path to that demo2.zip.
         with self.assertRaises(FuseOSError):
-            fs('symlink', '/.management/demo2.zip', path('demo2.zip'))
+            fs('symlink', '/.management/demo2_alt.zip', path('demo2.zip'))
 
         self.assertEqual(sorted(fs('readdir', '/.management', 0)), [
-                '.', '..', '0_demo2.zip'])
+                '.', '..', 'demo2.zip'])
 
     def test_getattr_mangement(self):
         fs = ManagedExplosiveFUSE('/mnt', '.management', [])
@@ -223,7 +272,7 @@ class ManagedExplosiveFsTestCase(BaseExplosiveFsTestCase, unittest.TestCase):
         self.assertEqual(fs('getattr', '/file1')['st_mode'], 0o40555)
         self.assertEqual(fs('getattr', '/file2')['st_mode'], 0o100444)
         self.assertEqual(fs('readdir', '/file1', 0), [
-            '.', '..', '0_demo1.zip'])
+            '.', '..', 'demo1.zip'])
 
     def test_management_supercede_getattr_dir_confict(self):
         # test getattr actually get the directory version not the
@@ -303,8 +352,8 @@ class SymlinkFUSETestCase(unittest.TestCase):
         fs.symlink('/somewhere/else', '/target/to/file')
         self.assertEqual(fs.symlinks['else'], '/target/to/file')
         # relative links gets resolved to absolute
-        fs.symlink('/somewhere/else', 'target')
-        self.assertEqual(fs.symlinks['else'], '/mnt/target')
+        fs.symlink('/somewhere/else2', 'target')
+        self.assertEqual(fs.symlinks['else2'], '/mnt/target')
 
         fs = SymlinkFUSE('/mnt/somewhere', base_path='/some/nested/structure')
 

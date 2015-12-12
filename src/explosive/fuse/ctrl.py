@@ -123,7 +123,8 @@ def get_argparse():
              'other archives can be created to add them to the filesystem.')
     parser.add_argument(
         '--manager-dir', dest='manager_dir', nargs='?', default='.manager',
-        help='Name of the symlink manager directory.')
+        help='Name of the symlink manager directory. the default is '
+             "'%(default)s'")
     parser.add_argument(
         'dir',
         help='The directory to mount the compressed archive(s) to.')

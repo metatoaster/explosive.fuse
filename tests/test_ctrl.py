@@ -187,7 +187,7 @@ class AcceptanceTestCase(unittest.TestCase):
 
         self.assertEqual(
             sorted(os.listdir(join(self.mountpoint, '.manager'))),
-            ['0_demo1.zip', '1_demo2.zip']
+            ['demo1.zip', 'demo2.zip']
         )
 
         self.assertEqual(
@@ -205,7 +205,7 @@ class AcceptanceTestCase(unittest.TestCase):
             ['file1', 'file2', 'file3', 'file4', 'file5', 'file6']
         )
 
-        os.unlink(join(self.mountpoint, '.manager', '0_demo1.zip'))
+        os.unlink(join(self.mountpoint, '.manager', 'demo1.zip'))
         self.assertEqual(
             sorted(os.listdir(self.mountpoint)),
             ['.manager', 'demo2.zip'],
@@ -215,7 +215,7 @@ class AcceptanceTestCase(unittest.TestCase):
 
         self.assertEqual(
             sorted(os.listdir(join(self.mountpoint, '.manager'))),
-            ['1_demo2.zip', 'archive.zip']
+            ['archive.zip', 'demo2.zip']
         )
 
         self.assertEqual(

@@ -216,7 +216,9 @@ class _SymlinkFUSE(LoggingMixIn, Operations):
         if not path.startswith(self.base_path):
             # symlinks must be created inside base_path.
             raise FuseOSError(EPERM)
+
         symkey = basename(path)
+
         target = abspath(join(self.mount_root, self.base_path[1:], source))
         self.symlinks[symkey] = target
         # Warning: non-standard return value
@@ -235,8 +237,8 @@ class _SymlinkFUSE(LoggingMixIn, Operations):
 
 class SymlinkFUSE(_SymlinkFUSE):
     """
-    Standardized implementation for methods that return non-standard
-    values.
+    Standardized implementation that traps the return values for methods
+    that return non-standard values.
     """
 
     def symlink(self, path, source):
@@ -258,9 +260,11 @@ class ManagedExplosiveFUSE(ExplosiveFUSE):
         base_path = '/' + management_node
         self.symlinkfs = _SymlinkFUSE(mount_root, base_path)
         super(ManagedExplosiveFUSE, self).__init__(*a, **kw)
-        self.symlinkfs.symlinks.update(
-            {'%d_%s' % (n, basename(k)): k
-             for n, k in enumerate(sorted(self.mapping.archives.keys()))})
+        symlinks = self.symlinkfs.symlinks
+        for n, k in enumerate(sorted(self.mapping.archives.keys())):
+            fn = basename(k)
+            fn = fn if fn not in symlinks else '%s_%d' % (basename(fn), n)
+            symlinks[fn] = k
 
     def readdir(self, path, fh):
         result = super(ManagedExplosiveFUSE, self).readdir(path, fh)
