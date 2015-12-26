@@ -4,15 +4,11 @@ from collections import deque
 from collections import namedtuple
 from os.path import basename
 from logging import getLogger
-from zipfile import ZipFile
-try:
-    from zipfile import BadZipFile
-except ImportError:  # pragma: no cover
-    # Assume python 2
-    from zipfile import BadZipfile as BadZipFile
-    FileNotFoundError = IOError  # This is raised by zipfile.
 
 from . import pathmaker
+from .archive import ArchiveFile
+from .archive import BadArchiveFile
+from .archive import FileNotFoundError
 
 logger = getLogger(__name__)
 
@@ -248,11 +244,11 @@ class DefaultMapper(object):
         """
 
         try:
-            with ZipFile(archive_path) as zf:
-                self._load_infolist(archive_path, zf.infolist())
+            with ArchiveFile(archive_path) as af:
+                self._load_infolist(archive_path, af.infolist())
             logger.info('loaded `%s`', archive_path)
             return True
-        except BadZipFile:
+        except BadArchiveFile:
             logger.warning(
                 '`%s` appears to be an invalid archive file', archive_path)
         except FileNotFoundError:
@@ -275,10 +271,10 @@ class DefaultMapper(object):
         # underlying files can change, or that new stack comes in, it's
         # best not to directly expose this.
         try:
-            with ZipFile(archive_path) as zf:
+            with ArchiveFile(archive_path) as zf:
                 # zf does remain open because of this.
                 return (id(info), zf.open(filename))
-        except BadZipFile:  # pragma: no cover
+        except BadArchiveFile:  # pragma: no cover
             logger.warning(
                 '`%s` became an invalid archive file', archive_path)
         except FileNotFoundError:  # pragma: no cover
@@ -301,8 +297,8 @@ class DefaultMapper(object):
         info = self.traverse(path)
 
         archive_filename, filename, _ = info
-        with ZipFile(archive_filename) as zf:
-            with zf.open(filename) as f:
+        with ArchiveFile(archive_filename) as af:
+            with af.open(filename) as f:
                 return f.read()
 
     def readdir(self, path):
