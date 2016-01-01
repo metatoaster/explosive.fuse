@@ -1,3 +1,5 @@
+import os.path
+
 from zipfile import ZipFile
 try:
     from zipfile import BadZipFile
@@ -7,6 +9,9 @@ except ImportError:  # pragma: no cover
     from zipfile import BadZipfile as BadZipFile
     FileNotFoundError = IOError  # This is raised by zipfile.
 
+from ._rarfile import RarFile
+from ._rarfile import BadRarFile
+
 from .exception import BadArchiveFile
 from .exception import UnsupportedArchiveFile
 
@@ -14,6 +19,7 @@ from .exception import UnsupportedArchiveFile
 # Lookup table for archive filename extension to its respective class.
 _archive_lookup = {
     'zip': ZipFile,
+    'rar': RarFile,
 }
 
 
@@ -30,8 +36,15 @@ class ArchiveFile(object):
 
         try:
             self.archive_file = archive_class(archive_filename)
-        except BadZipFile:  # XXX
+        except BadZipFile:
             raise BadArchiveFile()
+        except BadRarFile:
+            # this can be raised if file wasn't found, check first.
+            if not os.path.exists(archive_filename):
+                raise FileNotFoundError
+            else:  # pragma: no cover
+                # it's really a bad archive.
+                raise BadArchiveFile()
         except FileNotFoundError:  # pragma: no cover
             raise
         except Exception:  # pragma: no cover
