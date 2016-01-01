@@ -7,8 +7,9 @@ from logging import getLogger
 
 from . import pathmaker
 from .archive import ArchiveFile
-from .archive import BadArchiveFile
 from .archive import FileNotFoundError
+from .exception import BadArchiveFile
+from .exception import UnsupportedArchiveFile
 
 logger = getLogger(__name__)
 
@@ -251,6 +252,8 @@ class DefaultMapper(object):
         except BadArchiveFile:
             logger.warning(
                 '`%s` appears to be an invalid archive file', archive_path)
+        except UnsupportedArchiveFile as e:
+            logger.warning('`%s` %s', archive_path, str(e))
         except FileNotFoundError:
             logger.warning(
                 '`%s` does not exist.', archive_path)
