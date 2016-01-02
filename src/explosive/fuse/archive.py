@@ -3,7 +3,7 @@ import os.path
 from zipfile import ZipFile
 try:
     from zipfile import BadZipFile
-    FileNotFoundError = FileNotFoundError
+    FileNotFoundError = FileNotFoundError  # pragma: no cover
 except ImportError:  # pragma: no cover
     # Assume python 2
     from zipfile import BadZipfile as BadZipFile
