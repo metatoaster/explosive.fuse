@@ -6,7 +6,7 @@ try:
     UNRAR_SUPPORT = True
 except ImportError:  # pragma: no cover
     UNRAR_SUPPORT = False
-except LookupError:  # pragma: no cover
+except (LookupError, OSError):  # pragma: no cover
     UNRAR_SUPPORT = False
     LIBUNRAR_MISSING = True
 

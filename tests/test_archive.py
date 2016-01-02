@@ -6,7 +6,7 @@ from os.path import join
 
 try:
     from unrar.rarfile import RarFile
-except ImportError:
+except (ImportError, LookupError, OSError) as e:
     RarFile = None
 
 from explosive.fuse.archive import ArchiveFile
