@@ -11,26 +11,31 @@ matrix:
         apt:
           packages:
           - libfuse-dev
+      env: UNRAR_LIB_PATH=./src/libunrar/src/libunrar.so
     - python: 3.3
       addons:
         apt:
           packages:
           - libfuse-dev
+      env: UNRAR_LIB_PATH=./src/libunrar/src/libunrar.so
     - python: 3.4
       addons:
         apt:
           packages:
           - libfuse-dev
+      env: UNRAR_LIB_PATH=./src/libunrar/src/libunrar.so
     - python: 3.5
       addons:
         apt:
           packages:
           - libfuse-dev
+      env: UNRAR_LIB_PATH=./src/libunrar/src/libunrar.so
     - python: pypy
       addons:
         apt:
           packages:
           - libfuse-dev
+      env: UNRAR_LIB_PATH=./src/libunrar/src/libunrar.so
     - language: generic
       os: osx
       env: PY_VER=3.4.3
@@ -51,8 +56,16 @@ before_install:
       python -m virtualenv ~/.venv ;
       source ~/.venv/bin/activate ;
     fi
+  # only building/testing unrar on linux
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      cd src ;
+      git clone https://github.com/metatoaster/libunrar ;
+      cd libunrar/src ;
+      make lib ;
+      cd ../../.. ;
+    fi
 install:
-  - pip install nose coverage
+  - pip install nose coverage unrar
   - python setup.py develop
 script:
   - nosetests --with-coverage --cover-package=explosive.fuse
