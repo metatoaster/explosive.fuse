@@ -14,8 +14,16 @@ elsewhere.
 
 .. _FUSE: http://fuse.sourceforge.net/
 
-Currently, only ``zip`` archives are supported, with plans to support at
-least ``rar``.
+Currently, the following archive formats are supported:
+
+- zip (using builtin package zipfile)
+- rar (using third-party package `unrar`_)
+
+.. _unrar: https://pypi.python.org/pypi/unrar/
+
+All external archive formats are not enabled by default.  To enable,
+please install the packages as specified, and more information about
+them can be accessed via the links provided above.
 
 .. image:: https://travis-ci.org/metatoaster/explosive.fuse.svg?branch=master
     :target: https://travis-ci.org/metatoaster/explosive.fuse

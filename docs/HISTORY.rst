@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.4 (unreleased)
+----------------
+
+- RAR archive format support added using the package ``unrar``.
+
 0.3 (2015-12-12)
 ----------------
 
