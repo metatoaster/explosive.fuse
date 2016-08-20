@@ -12,18 +12,19 @@ the file entries within the archives are to be presented at the mounted
 location, and that the helper classes and functions within can be reused
 elsewhere.
 
-.. _FUSE: http://fuse.sourceforge.net/
+.. _FUSE: https://github.com/libfuse/libfuse
 
 Currently, the following archive formats are supported:
 
-- zip (using builtin package zipfile)
-- rar (using third-party package `unrar`_)
+- zip (builtin package ``zipfile``)
+- rar (require third-party package |unrar|_)
 
+.. |unrar| replace:: ``unrar``
 .. _unrar: https://pypi.python.org/pypi/unrar/
 
-All external archive formats are not enabled by default.  To enable,
-please install the packages as specified, and more information about
-them can be accessed via the links provided above.
+Archive formats that require third-party packages are not enabled by
+default.  To enable, please install the packages as specified, and more
+information about them can be accessed via the links provided above.
 
 .. image:: https://travis-ci.org/metatoaster/explosive.fuse.svg?branch=master
     :target: https://travis-ci.org/metatoaster/explosive.fuse
@@ -34,7 +35,7 @@ them can be accessed via the links provided above.
 Installation
 ============
 
-If all system level dependencies are satisified, the installation
+If all system level dependencies are satisfied, the installation
 process is simply a single ``pip`` call, like so::
 
     $ pip install explosive.fuse
@@ -47,9 +48,9 @@ System level dependencies
 -------------------------
 
 ExplosiveFUSE requires the FUSE kernel module for your operating system
-and its userspace tools be available, and Python 2.7/3.3+/PyPy.
+and its user space tools be available, and Python 2.7/3.3+/PyPy.
 
-First off, install the FUSE kernel module and userspace tools if they
+First off, install the FUSE kernel module and user space tools if they
 are not already installed.
 
 Linux
@@ -149,7 +150,7 @@ verify that this worked, a simple ``ls`` can be used::
     -r--r--r-- 1 user user 33 Oct 26 23:19 file6
 
 Files are presented as being owned by the user that created this mount
-point.  For specifics on access permisssions, please consult the fuse
+point.  For specifics on access permissions, please consult the fuse
 user manual (i.e. ``man fuse``).
 
 To unmount, simply call::
@@ -175,7 +176,7 @@ Layout Strategies
 
 The way the file entries are laid out in the resulting filesystem can be
 modified by the use of a layout strategy.  This is specified using the
-``-l`` or the ``--layout`` flag.  Naturally, the final rseult is also
+``-l`` or the ``--layout`` flag.  Naturally, the final result is also
 influenced by the usage of the ``--overwrite`` and the
 ``--omit-arcname`` flags and the arguments associated with each of the
 strategies (which are specified by appending ``:``, followed by the
@@ -251,15 +252,21 @@ Flags for fine-tuning filesystem behavior
 Troubleshooting
 ===============
 
+Error messages
+--------------
+
 Mounting shows the following error message::
 
     fusermount: failed to open /etc/fuse.conf: Permission denied
 
 This can be safely ignored, or alternatively have your system's
-adminstrator grant you read access to that file by putting your account
+administrator grant you read access to that file by putting your account
 into the ``fuse`` user group or equivalent on your system, or change the
 permission to that file to world readable, as that file does not contain
 any sensitive information under typical usage.
+
+Other issues
+------------
 
 If you encountered any other problems using this software please file an
 issue using the `issue tracker`_ for this project.
