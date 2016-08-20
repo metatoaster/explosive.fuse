@@ -87,7 +87,7 @@ provides Python version management) can be installed using the following
 commands::
 
     $ brew update
-    $ brew install osxfuse
+    $ brew install caskroom/cask/osxfuse
     $ brew install pyenv
     $ pyenv install 3.5.0  # or your desired version of Python
     $ pyenv global 3.5.0

@@ -48,7 +48,7 @@ before_install:
       brew update || brew update ;
       brew install pyenv ;
       brew outdated pyenv || brew upgrade pyenv ;
-      brew install osxfuse ;
+      brew install caskroom/cask/osxfuse ;
       pyenv install $PY_VER ;
       pyenv global $PY_VER ;
       pyenv rehash ;
