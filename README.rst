@@ -89,8 +89,8 @@ commands::
     $ brew update
     $ brew install caskroom/cask/osxfuse
     $ brew install pyenv
-    $ pyenv install 3.5.0  # or your desired version of Python
-    $ pyenv global 3.5.0
+    $ pyenv install 3.5.2  # or your desired version of Python
+    $ pyenv global 3.5.2
     $ pyenv rehash
 
 .. _Homebrew: http://brew.sh

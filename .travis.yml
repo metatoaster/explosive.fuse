@@ -38,10 +38,10 @@ matrix:
       env: UNRAR_LIB_PATH=./src/libunrar/src/libunrar.so
     - language: generic
       os: osx
-      env: PY_VER=3.4.3
+      env: PY_VER=3.4.5
     - language: generic
       os: osx
-      env: PY_VER=3.5.0
+      env: PY_VER=3.5.2
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
