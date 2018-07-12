@@ -32,7 +32,16 @@ class ArchiveFile(object):
         archive_type = archive_filename.rsplit('.', 1)[-1]
         archive_class = _archive_lookup.get(archive_type)
         if archive_class is None:
-            raise UnsupportedArchiveFile('unsupported archive format.')
+            # attempt zip fallback, because out of the archive formats
+            # currently supported it is the most popular one used by
+            # various file formats that bundle stuff together (such as
+            # .odt or .docx).
+            try:
+                self.archive_file = ZipFile(archive_filename)
+            except Exception:
+                raise UnsupportedArchiveFile('unsupported archive format.')
+            else:
+                return
 
         try:
             self.archive_file = archive_class(archive_filename)

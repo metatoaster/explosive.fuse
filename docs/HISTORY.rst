@@ -7,6 +7,10 @@ Changelog
 - Support for dropping of the file name extension (mostly to improve the
   presentation of filename sorting for certain file managers); may be
   toggled through the ``-s`` or ``--splitext-arcname`` flag.
+- Be able to extract zip files that do not have a ``.zip`` file name
+  extension, as this is now the default fallback to better support the
+  exploding of common file formats that make use of ``zip``, e.g.
+  ``odt`` or ``docx``.
 
 0.4 (2016-08-20)
 ----------------

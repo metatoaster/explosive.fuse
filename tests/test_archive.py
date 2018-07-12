@@ -50,6 +50,15 @@ class ArchiveFileZipTestCase(unittest.TestCase):
         # ensure it's closed outside of the `with` context.
         self.assertIsNone(af.archive_file.fp)
 
+    def test_load_archive_file_zip_alt_ext(self):
+        demo1 = path('demo1.alt')
+
+        with ArchiveFile(demo1) as af:
+            infolist = af.infolist()
+
+        self.assertEqual(sorted(f.filename for f in infolist), [
+            'file1', 'file2', 'file3', 'file4', 'file5', 'file6'])
+
     def test_load_archive_file_zip2(self):
         demo2 = path('demo2.zip')
 
