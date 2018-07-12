@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.5 (2018-07-13)
+----------------
+
+- Support for dropping of the file name extension (mostly to improve the
+  presentation of filename sorting for certain file managers); may be
+  toggled through the ``-s`` or ``--splitext-arcname`` flag.
+
 0.4 (2016-08-20)
 ----------------
 

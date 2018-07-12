@@ -114,6 +114,29 @@ class BaseExplosiveFsTestCase(object):
                 '.', '..', 'file1', 'file2', 'file3', 'file4',
                 'file5', 'file6'])
 
+    def test_readdir_omit_arcname(self):
+        fs = self.factory(
+            [path('demo1.zip'), path('demo2.zip')],
+            include_arcname=False,
+        )
+        self.assertEqual(
+            sorted(fs.readdir('', 0)), [
+                '.', '..', 'demo', 'file1', 'file2', 'file3', 'file4',
+                'file5', 'file6'])
+
+    def test_splitext_arcname(self):
+        fs = self.factory(
+            [path('demo1.zip'), path('demo2.zip')],
+            include_arcname=True,
+            splitext_arcname=True,
+        )
+        self.assertEqual(
+            sorted(fs.readdir('/demo1', 0)), [
+                '.', '..', 'file1', 'file2', 'file3', 'file4',
+                'file5', 'file6'])
+        fh = fs.open('/demo1/file1', 0)
+        self.assertEqual(fs.read('/demo1/file1', 1, 0, fh), b'b')
+
     def test_statfs(self):
         fs = self.factory(
             [path('demo1.zip'), path('demo2.zip')],

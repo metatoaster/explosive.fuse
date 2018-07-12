@@ -137,6 +137,11 @@ def get_argparse():
         help='Omit the basename of the origin archive from the generated '
              'paths.')
     parser.add_argument(
+        '-s', '--splitext-arcname', dest='splitext_arcname',
+        action='store_true',
+        help='Split the filename extension from the archive name; only in'
+             'effect if origin archive name is not omitted.')
+    parser.add_argument(
         '-V', '--version', action='version_verbose',
         help='Print version information and exit.')
     parser.add_argument(
@@ -172,6 +177,7 @@ def main(args=None):
             _pathmaker=parsed_args.pathmaker,
             overwrite=parsed_args.overwrite,
             include_arcname=parsed_args.include_arcname,
+            splitext_arcname=parsed_args.splitext_arcname,
         )
     else:
         fuse = ExplosiveFUSE(
@@ -179,6 +185,7 @@ def main(args=None):
             _pathmaker=parsed_args.pathmaker,
             overwrite=parsed_args.overwrite,
             include_arcname=parsed_args.include_arcname,
+            splitext_arcname=parsed_args.splitext_arcname,
         )
 
     try:

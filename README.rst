@@ -243,6 +243,10 @@ Flags for fine-tuning filesystem behavior
     files from ``SNS_001.zip`` archive being accessible as by default as
     that was the first file specified to be loaded.
 
+``-s, --splitext-arcname``
+    Sometimes it may be desirable to split the filename extenxion out of
+    the name of the source archive files from the generated paths.
+
 ``--overwrite``
     Useful when there are multiple file entries of the same name from
     multiple archives and only the latest one is desired, this flag will

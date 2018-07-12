@@ -46,7 +46,7 @@ def default():
     return default
 
 
-def flatten(char='_'):
+def flatten(char=FLATTEN_CHAR):
     """
     Flattens the directory structure to the root of the mount point by
     replacing all path separators for each file entries with the '_'

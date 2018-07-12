@@ -3,6 +3,7 @@ from collections import defaultdict
 from collections import deque
 from collections import namedtuple
 from os.path import basename
+from os.path import splitext
 from logging import getLogger
 
 from . import pathmaker
@@ -25,7 +26,7 @@ class DefaultMapper(object):
     """
 
     def __init__(self, path=None, pathmaker_name='default', _pathmaker=None,
-            overwrite=False, include_arcname=False):
+            overwrite=False, include_arcname=False, splitext_arcname=False):
         """
         Initialize the mapping, optionally with a path to an archive
         file.
@@ -36,6 +37,7 @@ class DefaultMapper(object):
         """
 
         self.include_arcname = include_arcname
+        self.splitext_arcname = splitext_arcname
         self.overwrite = overwrite
         if _pathmaker:
             self.pathmaker = _pathmaker
@@ -103,7 +105,11 @@ class DefaultMapper(object):
 
     def _load_infolist(self, archive_path, infolist):
         self.archives[archive_path] = time()
-        archive_name = basename(archive_path) + '/'
+        archive_name = (
+            splitext(basename(archive_path))[0]
+            if self.splitext_arcname else
+            basename(archive_path)
+        ) + '/'
         self.archive_ifilenames[archive_path] = i_filenames = []
 
         for info in infolist:
