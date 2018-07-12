@@ -26,10 +26,10 @@ Archive formats that require third-party packages are not enabled by
 default.  To enable, please install the packages as specified, and more
 information about them can be accessed via the links provided above.
 
-.. image:: https://travis-ci.org/metatoaster/explosive.fuse.svg?branch=master
+.. image:: https://travis-ci.org/metatoaster/explosive.fuse.svg?branch=0.5.x
     :target: https://travis-ci.org/metatoaster/explosive.fuse
-.. image:: https://coveralls.io/repos/metatoaster/explosive.fuse/badge.svg?branch=master
-   :target: https://coveralls.io/r/metatoaster/explosive.fuse?branch=master
+.. image:: https://coveralls.io/repos/metatoaster/explosive.fuse/badge.svg?branch=0.5.x
+   :target: https://coveralls.io/r/metatoaster/explosive.fuse?branch=0.5.x
 
 
 Installation
